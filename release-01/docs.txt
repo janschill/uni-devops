@@ -1,0 +1,21 @@
+Files:
+
+flag_tool.c:
+A tool for inspecting all tweets made by users, by querying the databse.
+It is possible with this tool to 'flag' tweets by feeding the program with the ids of tweets to flag.
+
+minitwit.py:
+The web application itself, 
+containing a number of action methods for rendering 
+different parts of the webpage
+
+control.sh:
+A bash script for performing different actions of the web application,
+such as cleanup, startup and shutdown.
+
+Migration:
+compile flag_tool.c to be compatible with CPU on my pc, done using Makefile
+convert py2 file to py3 file using 2to3, resulting file is minitwit.py3
+update control.sh to point to minitwit.py3
+update control.sh to use double quotes around variable names and added leading shebang
+
