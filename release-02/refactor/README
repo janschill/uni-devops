@@ -1,0 +1,8 @@
+# MiniTwit
+
+## Usage
+
+```bash
+bundle install # install gems
+rackup # start server
+```

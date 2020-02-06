@@ -1,0 +1,23 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bcrypt (3.1.13)
+    dotenv (2.7.5)
+    rack (2.1.2)
+    roda (3.28.0)
+      rack
+    sequel (5.29.0)
+    sqlite (1.0.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bcrypt
+  dotenv
+  roda
+  sequel
+  sqlite
+
+BUNDLED WITH
+   2.1.4
