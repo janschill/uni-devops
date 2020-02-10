@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel=stylesheet type=text/css href="/assets/css/style.css">
+  <title><%= @options['page_title'] %> | MiniTwit</title>
+</head>
+<body class="page">
+  <h1>MiniTwit</h1>
+  <nav class="navigation">
+    <% if @user %>
+    <a href="/">my timeline</a> |
+    <a href="/public">public timeline</a> |
+    <a href="/logout">sign out <%= @user.username %></a>
+    <% else %>
+    <a href="/public">public timeline</a> |
+    <a href="/register">sign up</a> |
+    <a href="/login">sign in</a>
+    <% end %>
+  </nav>
+  <main class="body">
+  <%= yield %>
+  </main>
+  <footer class="footer">
+    MiniTwit &mdash; A Roda appication
+  </footer>
+</body>
+</html>

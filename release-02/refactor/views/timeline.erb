@@ -1,0 +1,40 @@
+<h2><%= @options['page_title'] %></h2>
+<% if @user %>
+  <% if @options['request_endpoint'].eql?('user_timeline') %>
+  <div class="followstatus">
+    <% if @user.user_id.equal?(@profile_user.user_id) %>
+      <strong>This is you!</strong>
+    <% elsif @followed %>
+      <strong>You are currently following this user.</strong>
+      <a class="unfollow" href="/<%= @profile_user.username %>/unfollow">Unfollow user</a>
+    <% else %>
+      <strong>You are not follwing this user.</strong>
+      <a class="follow" href="/<%= @profile_user.username %>/follow">Follow user</a>
+    <% end %>
+  </div>
+  <% elsif @options['request_endpoint'].eql?('timeline')%>
+  <div class="twitbox">
+    <h3>What's on your mind <%= @user.username%>?</h3>
+    <form action="/add_message" method="post">
+      <label for="text">Text</label>
+      <input id="text" type="text" name="text" size="60" required>
+      <input type="submit" value="Share">
+    </form>
+  </div>
+  <% end %>
+<% end %>
+<% if @messages.size > 0%>
+<ul class="messages">
+<% @messages.each do |message| %>
+  <li>
+    <img src="<%= message.user.email %>">
+    <p>
+      <strong><a href="<%= message.user.username %>"><%= message.user.username %></a></strong>
+      <%= message.text %>
+      <small>&mdash; <%= message.pub_date %></small>
+  </li>
+<% end %>
+<% else %>
+  <p>There's no message so far.</p>
+<% end %>
+</ul>
