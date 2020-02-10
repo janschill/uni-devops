@@ -4,6 +4,7 @@ require 'bcrypt'
 
 module MiniTwit
   class App < Roda
+    plugin :assets, css: ['style.css']
     plugin :render
     plugin :hooks
     plugin :sessions,
@@ -21,6 +22,7 @@ module MiniTwit
     end
 
     route do |r|
+      r.assets
       # TODO: Fix Message method to also fetch followed messages
       r.root do
         r.redirect('public') if user.nil?
@@ -158,7 +160,7 @@ module MiniTwit
         @messages = Message.messages_by_user_id(@profile_user.user_id)
 
         view('timeline')
+      end
     end
-  end
   end
 end
