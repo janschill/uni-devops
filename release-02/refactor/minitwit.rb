@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'roda'
 require './models'
 require 'bcrypt'
@@ -8,15 +10,15 @@ module MiniTwit
     plugin :render
     plugin :hooks
     plugin :sessions,
-      :key=>ENV['SESSION_KEY'],
-      :secret=>ENV['SESSION_RAND']
+           key: ENV['SESSION_KEY'],
+           secret: ENV['SESSION_RAND']
 
     user = nil
 
     # Check if user is in session
     before do
       user = nil
-      if !session['user_id'].nil?
+      unless session['user_id'].nil?
         user = User.where(user_id: session['user_id']).first
       end
     end
@@ -50,7 +52,7 @@ module MiniTwit
           r.redirect('/')
         else
           text = r.params['text']
-          if text != ""
+          if text != ''
             Message.new(
               text: text,
               user_id: user.user_id,
@@ -109,7 +111,8 @@ module MiniTwit
             User.new(
               email: email_address,
               username: username,
-              password: BCrypt::Password.create(password)).save_changes
+              password: BCrypt::Password.create(password)
+            ).save_changes
             r.redirect('login')
           end
           view('register')
@@ -153,7 +156,7 @@ module MiniTwit
         r.redirect('/') if @profile_user.nil?
 
         @followed = false
-        if !@user.nil?
+        unless @user.nil?
           follower = Follower.where(who_id: @user.user_id, whom_id: whom_id).first
           @followed = true unless follower.nil?
         end

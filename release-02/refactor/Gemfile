@@ -9,3 +9,4 @@ gem 'dotenv'
 gem 'sequel'
 gem 'bcrypt'
 gem 'sqlite'
+gem 'rubocop', require: false

@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# Message posted by users
 class Message < Sequel::Model
   many_to_one :user
 
