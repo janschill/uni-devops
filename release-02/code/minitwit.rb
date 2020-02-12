@@ -4,6 +4,8 @@ require 'roda'
 require './models'
 require 'bcrypt'
 
+# rubocop:disable ClassLength
+# rubocop:disable BlockLength
 module MiniTwit
   class App < Roda
     plugin :assets, css: ['style.css']
@@ -48,23 +50,22 @@ module MiniTwit
 
       # TODO: use 403 for redirect
       r.post 'add_message' do
-        if session['user_id'].nil?
-          r.redirect('/')
-        else
-          text = r.params['text']
-          if text != ''
-            Message.new(
-              text: text,
-              user_id: user.user_id,
-              pub_date: Time.now.to_i,
-              flagged: false
-            ).save_changes
-          end
-          r.redirect('/')
+        r.redirect('/') if session['user_id'].nil?
+
+        text = r.params['text']
+        if text != ''
+          Message.new(
+            text: text,
+            user_id: user.user_id,
+            pub_date: Time.now.to_i,
+            flagged: false
+          ).save_changes
         end
+        r.redirect('/')
       end
 
       r.on 'login' do
+        @options = { 'page_title' => 'Login' }
         r.get do
           @error = nil
           r.redirect('/') unless user.nil?
@@ -88,6 +89,7 @@ module MiniTwit
       end
 
       r.on 'register' do
+        @options = { 'page_title' => 'Login' }
         r.get do
           r.redirect('/') unless user.nil?
           view('register')
@@ -167,3 +169,6 @@ module MiniTwit
     end
   end
 end
+
+# rubocop:enable ClassLength
+# rubocop:enable BlockLength
