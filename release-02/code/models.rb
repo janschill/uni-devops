@@ -4,7 +4,7 @@ require 'sequel'
 
 # Database and ORM layers
 module MiniTwit
-  DB = Sequel.connect("sqlite://db/#{ENV['DATABASE_NAME']}.db")
+  DB = Sequel.connect("sqlite:///tmp/#{ENV['DATABASE_NAME']}.db")
 
   Model = Class.new(Sequel::Model)
   Model.db = DB
