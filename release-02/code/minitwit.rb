@@ -29,7 +29,7 @@ module MiniTwit
 
     route do |r|
       r.assets
-      # TODO: Fix Message method to also fetch followed messages
+
       r.root do
         r.redirect('public') if user.nil?
         @options = {
