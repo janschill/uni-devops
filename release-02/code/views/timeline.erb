@@ -4,7 +4,7 @@
   <div class="followstatus">
     <% if @user.user_id.equal?(@profile_user.user_id) %>
       <strong>This is you!</strong>
-    <% elsif @followed %>
+    <% elsif @is_follower %>
       <strong>You are currently following this user.</strong>
       <a class="unfollow" href="/<%= @profile_user.username %>/unfollow">Unfollow user</a>
     <% else %>
