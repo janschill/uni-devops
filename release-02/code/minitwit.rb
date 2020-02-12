@@ -128,7 +128,7 @@ module MiniTwit
 
       r.on :username do |username|
         @profile_user = User.where(username: username).first
-        whom_id = @profile_user.user_id
+        whom_id = @profile_user.user_id if @profile_user
         @user = user
 
         r.on 'follow' do
