@@ -21,5 +21,5 @@ elsif ARGV[0] == "inspectdb"
 elsif ARGV[0] == "flag"
     ARGV.each { |flag| system("./flag_tool #{flag}") }
 else
-    puts "I do not know this command..." 
+    puts "I do not know this command..."
 end

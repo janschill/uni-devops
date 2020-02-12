@@ -1,26 +1,17 @@
+# MiniTwit
 
-                        / MiniTwit /
+## Usage
 
-           because writing todo lists is not fun
+1. Copy `.env.sample` to `.env` and set variables according to your environment. The `SESSION_RAND` should be a string with 64 characters.
+1. Install all gems by running `bundle install`. If you don't have bundler installed are running into any issues with it or `rbenv` refer to the wiki entry: [https://github.com/janschill/uni-devops/wiki/Session-02#install-rbenv-and-bundler](https://github.com/janschill/uni-devops/wiki/Session-02#install-rbenv-and-bundler).
+1. Start the server by running `rackup`
+1. Check port number from terminal output and open in web browser under `localhost`
 
+```bash
+bundle install # install gems
+rackup # start server
+```
 
-    ~ What is MiniTwit?
+### Database
 
-      A SQLite and Flask powered twitter clone
-
-    ~ How do I use it?
-
-      1. edit the configuration in the minitwit.py file
-
-      2. fire up a python shell and run this:
-
-         >>> from minitwit import init_db; init_db()
-
-      3. now you can run the minitwit.py file with your
-         python interpreter and the application will
-         greet you on http://localhost:5000/
-	
-    ~ Is it tested?
-
-      You betcha.  Run the `minitwit_tests.py` file to
-      see the tests pass.
+If you don't have a database the current state of the `control.sh` can generate a database by running `bin/control.sh init`. It will generate a database with the `schema.sql` in the `db` folder. It will also place the database in this folder. This is important for the application.
