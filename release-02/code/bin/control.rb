@@ -25,7 +25,7 @@ elsif ARGV[0] == 'stop'
   puts "Stopping minitwit on PID: #{minitwit_pid}"
   system("kill -TERM #{minitwit_pid}")
 elsif ARGV[0] == 'inspectdb'
-  `./bin/flag_tool.rb -i | less`
+  puts `./bin/flag_tool.rb -i | less`
 elsif ARGV[0] == 'flag'
   ARGV.each { |flag| system("./bin/flag_tool #{flag}") }
 else
