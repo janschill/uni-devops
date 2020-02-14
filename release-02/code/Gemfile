@@ -10,3 +10,4 @@ gem 'sequel'
 gem 'bcrypt'
 gem 'sqlite'
 gem 'rubocop', require: false
+gem 'json'
