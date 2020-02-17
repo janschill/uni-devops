@@ -50,23 +50,21 @@ module MiniTwit
                     response.status = 200
                     return ""
                 end
-
             end
 
-            #check if req from simulator (how to inspect req headers?)
+            #check if request originated from the simulator (does not work for the test)
 
-            #authorization_code = r.env["HTTP_Authorization"]
-            #if authorization_code != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh"
-            #    return {"status" => 403, "error_msg" => "You are not authorized to use this resource!"}.to_json
-            #end
+            authorization_code = r.env["HTTP_AUTHORIZATION"]
+            if authorization_code != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh"
+                response.status = 403
+                return "You are not authorized to use this resource!"
+            end
 
             r.on "msgs" do
                 r.is do 
                     r.get do
                         no_msgs = r.params["no"].to_s
                         no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i #forgive me
-                        #msgs = Message.join_table(:inner, :users, :user_id, :user_id)
-
                         msgs = DB.fetch("SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 ORDER BY m.pub_date DESC LIMIT ?;", no_msgs)
                         filtered_msgs = []
                         msgs.each{|msg|
@@ -76,15 +74,6 @@ module MiniTwit
                             filtered_msg["user"] = msg[:username]
                             filtered_msgs.append(filtered_msg)
                         }
-                        #msgs = msgs.where(flagged: 0).order(Sequel.desc(:pub_date)).limit(no_msgs)
-                        #filtered_msgs = []
-                        #for msg in msgs
-                        #   filtered_msg = {}
-                        #    filtered_msg["content"] = msg.text
-                        #    filtered_msg["pub_date"] = msg.pub_date
-                        #    filtered_msg["user"] = msg.username
-                        #    filtered_msgs.append(filtered_msg)
-                        #end
                         return filtered_msgs.to_json
                     end
                 end 
@@ -135,8 +124,6 @@ module MiniTwit
                     no_followers = r.params["no"].to_s
                     no_followers = no_followers.empty? ? 100 : no_followers.to_i #forgive me
                     
-                    
-
                     r.post do 
                         body = JSON.parse(r.body.read)
                         follow_username = body["follow"].to_s
