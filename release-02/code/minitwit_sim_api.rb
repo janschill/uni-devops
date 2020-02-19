@@ -2,6 +2,7 @@ require 'roda'
 require './models'
 require 'bcrypt'
 require 'json'
+require 'uri'
 
 module MiniTwit
 
@@ -47,8 +48,8 @@ module MiniTwit
                     response.status = 400
                     return error
                 else   
-                    response.status = 200
-                    return ""
+                    response.status = 204
+                    return nil
                 end
             end
 
@@ -79,12 +80,13 @@ module MiniTwit
                 end 
 
                 r.is String do |username|
+                    username = URI.unescape(username)
                     user = User.where(username: username).first
+                    if user == nil
+                        response.status = 400
+                        return "No user with name " + username
+                    end
                     r.get do
-                        if user == nil
-                            response.status = 400
-                            return ""
-                        end
                         no_msgs = r.params["no"].to_s
                         no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i #forgive me
                         msgs = DB.fetch("SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 AND u.user_id = ? ORDER BY m.pub_date DESC LIMIT ?;", user.user_id, no_msgs)
@@ -107,18 +109,19 @@ module MiniTwit
                             pub_date: Time.now.to_i,
                             flagged: false
                           ).save_changes
-                          response.status = 200
-                          return ""
+                          response.status = 204
+                          return nil
                     end
                 end
             end
 
             r.on "fllws" do
                 r.is String do |username|
+                    username = URI.unescape(username)
                     user = User.where(username: username).first
                     if user == nil
                         response.status = 400
-                        return ""
+                        return "No user with name " + username
                     end
 
                     no_followers = r.params["no"].to_s
@@ -137,8 +140,8 @@ module MiniTwit
                                 whom_id: follow_user.user_id,
                                 who_id: user.user_id
                             ).save_changes
-                            response.status = 200
-                            return ""
+                            response.status = 204
+                            return nil
                         end
 
                         unfollow_username = body["unfollow"].to_s
@@ -153,8 +156,8 @@ module MiniTwit
                             whom_id: unfollow_user.user_id,
                             who_id: user.user_id
                           ).delete
-                          response.status = 200
-                          return ""
+                          response.status = 204
+                          return nil
                     end
 
                     r.get do
