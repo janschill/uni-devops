@@ -5,6 +5,7 @@ GEM
     bcrypt (3.1.13)
     dotenv (2.7.5)
     jaro_winkler (1.5.4)
+    json (2.3.0)
     parallel (1.19.1)
     parser (2.7.0.2)
       ast (~> 2.4.0)
@@ -21,7 +22,8 @@ GEM
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
     sequel (5.29.0)
-    sqlite (1.0.2)
+    sqlite3 (1.4.2)
+    tilt (2.0.10)
     unicode-display_width (1.6.1)
 
 PLATFORMS
@@ -30,10 +32,12 @@ PLATFORMS
 DEPENDENCIES
   bcrypt
   dotenv
+  json
   roda
   rubocop
   sequel
-  sqlite
+  sqlite3
+  tilt
 
 BUNDLED WITH
    2.1.4

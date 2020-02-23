@@ -4,10 +4,12 @@ source "https://rubygems.org"
 
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
-gem 'roda'
-gem 'dotenv'
-gem 'sequel'
 gem 'bcrypt'
-gem 'sqlite'
-gem 'rubocop', require: false
+gem 'dotenv'
 gem 'json'
+gem 'roda'
+gem 'rubocop', require: false
+gem 'sequel'
+gem 'sqlite'
+gem 'sqlite3'
+gem 'tilt'
