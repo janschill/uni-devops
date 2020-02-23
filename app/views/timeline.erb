@@ -14,10 +14,8 @@
   </div>
   <% elsif @options['request_endpoint'].eql?('timeline')%>
   <div class="twitbox">
-    <h3>What's on your mind <%= @user.username%>?</h3>
     <form action="/add_message" method="post">
-      <label for="text">Text</label>
-      <input id="text" type="text" name="text" size="60" required>
+      <input id="text" type="text" name="text" size="60" placeholder="What's happening?" required>
       <input type="submit" value="Share">
     </form>
   </div>
@@ -29,7 +27,7 @@
   <li>
     <img src="<%= message.user.email %>">
     <p>
-      <strong><a href="<%= message.user.username %>"><%= message.user.username %></a></strong>
+      <strong><a href="<%= message.user.username %>"><%= message.user.username %></a></strong><br>
       <%= message.text %>
       <small>&mdash; <%= Time.at(message.pub_date).strftime('%F') %></small>
   </li>
