@@ -1,0 +1,11 @@
+default:
+  adapter: sqlite
+
+development:
+  database: db/development.db
+
+production:
+  database: db/production.db
+
+test:
+  database: db/test.db
