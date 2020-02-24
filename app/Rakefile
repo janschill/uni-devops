@@ -1,6 +1,92 @@
 # frozen_string_literal: true
 
-desc 'Print reminder about eating more fruit.'
-task :apple do
-  puts 'Eat more apples!'
+require 'yaml'
+
+# rubocop:disable BlockLength
+namespace :minitwit do
+  namespace :server do
+    task :development do
+      puts 'Starting development server on port 9292 …'
+      ENV['APP_ENVIRONMENT'] ||= 'development'
+      sh 'rackup -D -P server.pid'
+      sleep(0.2)
+      pid = File.read('server.pid')
+      puts "Server running on PID: #{pid}"
+    end
+
+    task :production do
+      puts 'Starting production server on port 80 …'
+      ENV['APP_ENVIRONMENT'] ||= 'production'
+      sh 'rackup -D -P server.pid -E PRODUCTION -p 80'
+      sleep(0.2)
+      pid = File.read('server.pid')
+      puts "Server running on PID: #{pid}"
+    end
+
+    task :stop do
+      puts 'Stopping server …'
+      pid = File.read('server.pid').to_i
+      sh "kill #{pid}"
+    end
+  end
+
+  # TODO: Implement tests
+  task :test do
+    puts 'Running tests …'
+    ENV['APP_ENVIRONMENT'] ||= 'test'
+  end
+  # TODO: Implement flag command
 end
+
+namespace :db do
+  database = YAML.load_file('config/database.yml')
+
+  task :create do
+    puts 'Creating databases …'
+    unless File.exist?(database['development']['database'])
+      sh "sqlite3 #{database['development']['database']} < db/schema.sql"
+    end
+    unless File.exist?(database['production']['database'])
+      sh "sqlite3 #{database['production']['database']} < db/schema.sql"
+    end
+    unless File.exist?(database['test']['database'])
+      sh "sqlite3 #{database['test']['database']} < db/schema.sql"
+    end
+  end
+
+  task :seed do
+    if File.exist?(database['development']['database']) &&
+       File.exist?(database['test']['database'])
+      puts 'Seeding development and testing database …'
+      require './db/seeder'
+    else
+      puts 'Database is missing. Please run db:create to create databases.'
+    end
+  end
+
+  task :drop do
+    puts 'Dropping databases …'
+    sh 'rm db/*.db'
+  end
+
+  task :inspect do
+    puts 'Inspecting database …'
+    sh 'bin/flag_tool.rb -i | less'
+  end
+end
+
+namespace :env do
+  task :generate do
+    if File.exist?('.env')
+      puts '.env file already exists.'
+    else
+      puts 'Generating .env file …'
+      sh 'cp .env.sample .env'
+      require 'securerandom'
+      random_string = SecureRandom.alphanumeric(64)
+      sh "sed -i '' 's/SESSION_KEY=/SESSION_KEY=devops/g' .env"
+      sh "sed -i '' 's/SESSION_RAND=/SESSION_RAND=#{random_string}/g' .env"
+    end
+  end
+end
+# rubocop:enable BlockLength
