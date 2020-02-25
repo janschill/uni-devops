@@ -29,8 +29,11 @@ RUN ./bin/control.rb init
 WORKDIR /var/www
 
 RUN echo -e "#!/bin/sh\n\
+cd api \n\
+rackup -p 1337 -o 0.0.0.0 & \n\
+cd .. \n\
 cd app \n\
-rackup -p 80 -o 0.0.0.0 > log.txt 2> logerr.txt & \n\
+rackup -p 80 -o 0.0.0.0\n\
 " >> start.sh && chmod +x start.sh
 
 ENTRYPOINT ["./start.sh"]
