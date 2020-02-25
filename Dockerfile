@@ -1,6 +1,7 @@
 FROM ruby:2.6.5-alpine3.11
 
-COPY ./ /var/www/
+COPY ./api /var/www/api
+COPY ./app /var/www/app
 
 WORKDIR /var/www/
 
@@ -11,3 +12,25 @@ RUN apk add build-base && \
 
 RUN cd app && \
     bundle
+
+EXPOSE 80
+
+WORKDIR ./app
+
+RUN echo -e " \n\
+DATABASE_NAME=minitwit \n\
+ENVIRONMENT= \n\
+SESSION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \n\
+SESSION_RAND=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \n\
+" >> .env
+
+RUN ./bin/control.rb init
+
+WORKDIR /var/www
+
+RUN echo -e "#!/bin/sh\n\
+cd app \n\
+rackup -p 80 -o 0.0.0.0 > log.txt 2> logerr.txt & \n\
+" >> start.sh && chmod +x start.sh
+
+ENTRYPOINT ["./start.sh"]
