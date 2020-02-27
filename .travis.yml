@@ -1,4 +1,7 @@
-# This file will handle that 
+branches:
+  only:
+  - production
+
 services:
   - docker
 
