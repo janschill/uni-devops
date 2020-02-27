@@ -15,7 +15,7 @@
   <% elsif @options['request_endpoint'].eql?('timeline')%>
   <div class="twitbox">
     <form action="/add_message" method="post">
-      <input id="text" type="text" name="text" size="60" placeholder="What's happening?" required>
+      <input class="twitbox__input" id="text" type="text" name="text" size="60" placeholder="What's happening?" required>
       <input type="submit" value="Share">
     </form>
   </div>
