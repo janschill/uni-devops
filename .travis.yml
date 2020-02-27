@@ -11,15 +11,18 @@
 services:
   - docker
 
-deploy:
-  - provider: script
-    script: ./travis_stages/deploy.sh
-    on:
-      branch: master
-  - provider: script
-    script: ./travis_stages/test.sh
-    on:
-      branch: production
+jobs:
+  include:
+    - stage: test
+      script: 
+        - docker build -t freakency/devops .
+
+    - stage: deploy
+      provider: script
+      script: ./travis_stages/deploy.sh
+      on:
+        branch: production
+
 
 # before_install:
 # - docker build -t freakency/devops .
