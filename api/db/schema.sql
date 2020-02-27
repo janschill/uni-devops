@@ -1,0 +1,23 @@
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username STRING NOT NULL,
+  email STRING NOT NULL,
+  password STRING NOT NULL
+);
+
+DROP TABLE IF EXISTS followers;
+CREATE TABLE followers
+(
+  who_id INTEGER,
+  whom_id INTEGER
+);
+
+DROP TABLE IF EXISTS messages;
+CREATE TABLE messages (
+  message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  text STRING NOT NULL,
+  pub_date INTEGER,
+  flagged INTEGER
+);

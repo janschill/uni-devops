@@ -3,7 +3,6 @@ GEM
   specs:
     ast (2.4.0)
     bcrypt (3.1.13)
-    dotenv (2.7.5)
     jaro_winkler (1.5.4)
     json (2.3.0)
     parallel (1.19.1)
@@ -11,6 +10,7 @@ GEM
       ast (~> 2.4.0)
     rack (2.1.2)
     rainbow (3.0.0)
+    rake (13.0.1)
     roda (3.28.0)
       rack
     rubocop (0.79.0)
@@ -32,8 +32,8 @@ PLATFORMS
 
 DEPENDENCIES
   bcrypt
-  dotenv
   json
+  rake
   roda
   rubocop
   sequel

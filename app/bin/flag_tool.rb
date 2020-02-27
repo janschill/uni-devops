@@ -1,19 +1,18 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'dotenv'
 require 'sequel'
+require 'yaml'
 
-Dotenv.load
-
+# Helper script to inspect database
 help_text = "ITU-Minitwit Tweet Flagging Tool\n\n" \
-           "Usage:\n" \
-           "  flag_tool <tweet_id>...\n" \
-           "  flag_tool -i\n" \
-           "  flag_tool -h\n" \
-           "Options:\n" \
-           "-h            Show this screen.\n" \
-           "-i            Dump all tweets and authors to STDOUT.\n"
+            "Usage:\n" \
+            "  flag_tool <tweet_id>...\n" \
+            "  flag_tool -i\n" \
+            "  flag_tool -h\n" \
+            "Options:\n" \
+            "-h            Show this screen.\n" \
+            "-i            Dump all tweets and authors to STDOUT.\n"
 
 def print_tweet(tweet_id, user_id, tweet_text, flagged)
   printf "%s,%s,%s,%s\n",
@@ -27,7 +26,8 @@ if ARGV.length == 1 && ARGV[0].eql?('-h')
   puts help_text
   exit(true)
 end
-DB = Sequel.sqlite("/tmp/#{ENV['DATABASE_NAME']}.db")
+databases = YAML.load_file('config/database.yml')
+DB = Sequel.sqlite(databases['development']['database'])
 messages = DB[:messages]
 
 if ARGV.length == 1 && ARGV[0].eql?('-i')

@@ -24,6 +24,8 @@ WORKDIR /var/www
 COPY ./api /var/www/api
 COPY ./app /var/www/app
 RUN cd app && \
+    bundle && \
+    cd ../api && \
     bundle
 
 WORKDIR /var/www/app
@@ -41,10 +43,11 @@ WORKDIR /var/www
 
 RUN echo -e "#!/bin/sh\n\
     cd api \n\
-    rackup -p 1337 -o 0.0.0.0 & \n\
+    bundle exec rake api:start \n\
     cd .. \n\
     cd app \n\
-    rackup -p 80 -o 0.0.0.0\n\
+    bundle exec rake app:start \n\
+    tail -f /dev/null \n\
     " >> start.sh && chmod +x start.sh
 
 ENTRYPOINT ["./start.sh"]
