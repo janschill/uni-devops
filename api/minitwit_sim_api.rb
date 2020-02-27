@@ -6,7 +6,10 @@ require 'bcrypt'
 require 'json'
 require 'uri'
 
+# rubocop:disable ClassLength, BlockLength
+# MiniTwit API
 module MiniTwit
+  # MiniTwit API
   class SimAPI < Roda
     latest = 0
 
@@ -177,3 +180,4 @@ module MiniTwit
     end
   end
 end
+# rubocop:enable ClassLength, BlockLength

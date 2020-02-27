@@ -11,29 +11,22 @@ RUN apk add build-base && \
     gem install bundler
 
 RUN cd app && \
+    bundle && \
+    cd ../api && \
     bundle
 
 EXPOSE 80
+EXPOSE 1337
 
-WORKDIR ./app
-
-RUN echo -e " \n\
-    DATABASE_NAME=minitwit \n\
-    ENVIRONMENT= \n\
-    SESSION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \n\
-    SESSION_RAND=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \n\
-    " >> .env
-
-RUN ./bin/control.rb init
-
-WORKDIR /var/www
+WORKDIR /var/www/
 
 RUN echo -e "#!/bin/sh\n\
     cd api \n\
-    rackup -p 1337 -o 0.0.0.0 & \n\
+    bundle exec rake api:start \n\
     cd .. \n\
     cd app \n\
-    rackup -p 80 -o 0.0.0.0\n\
+    bundle exec rake app:start \n\
+    tail -f /dev/null \n\
     " >> start.sh && chmod +x start.sh
 
 ENTRYPOINT ["./start.sh"]

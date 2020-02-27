@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 require 'sequel'
+require 'yaml'
 
 # Database and ORM layers
 module MiniTwit
-  DB = Sequel.connect('sqlite:///tmp/minitwit.db')
+  databases = YAML.load_file('config/database.yml')
+  DB = Sequel.connect(
+    "#{databases['default']['adapter']}://"\
+    "#{databases['production']['database']}"
+  )
 
   Model = Class.new(Sequel::Model)
   Model.db = DB

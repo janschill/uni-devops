@@ -29,20 +29,22 @@ $ gem install bundler
 $ bundle install
 ```
 
-5. Copy `.env.sample` to `.env` and populate with data
+5. Create `.env` file with secret
 
 ```bash
-$ cp .env.sample .env
+$ bundle exec rake env:generate
 ```
 
-6. Create database
+6. Create database (& seed it)
 
 ```bash
-$ ./bin/control.rb init
+$ bundle exec rake db:create
+$ bundle exec rake db:seed
 ```
 
 7. Start server
 
 ```bash
-$ rackup
+$ bundle exec rake app:server:development
+$ bundle exec rake app:server:production
 ```
