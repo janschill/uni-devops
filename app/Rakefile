@@ -8,7 +8,7 @@ namespace :app do
     task :development do
       puts 'Starting development server on port 9292 …'
       ENV['APP_ENVIRONMENT'] ||= 'development'
-      sh 'rackup -D -P server.pid'
+      sh 'rackup -D -P server.pid -o 0.0.0.0'
       sleep(0.2)
       pid = File.read('server.pid')
       puts "Server running on PID: #{pid}"
@@ -17,7 +17,7 @@ namespace :app do
     task :production do
       puts 'Starting production server on port 80 …'
       ENV['APP_ENVIRONMENT'] ||= 'production'
-      sh 'rackup -D -P server.pid -E PRODUCTION -p 80'
+      sh 'rackup -D -P server.pid  -o 0.0.0.0 -E PRODUCTION -p 80'
       sleep(0.2)
       pid = File.read('server.pid')
       puts "Server running on PID: #{pid}"

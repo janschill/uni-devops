@@ -6,7 +6,7 @@ namespace :api do
   namespace :server do
     task :start do
       puts 'Starting API production server on port 1337 …'
-      sh 'rackup -D -P server.pid -E PRODUCTION -p 1337'
+      sh 'rackup -D -P server.pid -o 0.0.0.0 -E PRODUCTION -p 1337'
       sleep(0.2)
       pid = File.read('server.pid')
       puts "Server running on PID: #{pid}"
@@ -30,8 +30,8 @@ namespace :db do
 
   task :create do
     puts 'Creating databases …'
-    unless File.exist?(database['api']['database'])
-      sh "sqlite3 #{database['api']['database']} < db/schema.sql"
+    unless File.exist?(database['production']['database'])
+      sh "sqlite3 #{database['production']['database']} < db/schema.sql"
     end
   end
 
