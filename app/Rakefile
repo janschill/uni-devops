@@ -3,7 +3,7 @@
 require 'yaml'
 
 # rubocop:disable BlockLength
-namespace :minitwit do
+namespace :app do
   namespace :server do
     task :development do
       puts 'Starting development server on port 9292 …'
@@ -28,6 +28,12 @@ namespace :minitwit do
       pid = File.read('server.pid').to_i
       sh "kill #{pid}"
     end
+  end
+
+  task :start do
+    Rake::Task['db:create'].invoke
+    Rake::Task['env:generate'].invoke
+    Rake::Task['app:server:production'].invoke
   end
 
   # TODO: Implement tests
@@ -66,7 +72,9 @@ namespace :db do
 
   task :drop do
     puts 'Dropping databases …'
-    sh 'rm db/*.db'
+    sh "rm #{databases['development']['database']}"
+    sh "rm #{databases['test']['database']}"
+    sh "rm #{databases['production']['database']}"
   end
 
   task :inspect do

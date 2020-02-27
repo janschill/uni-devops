@@ -1,0 +1,44 @@
+# frozen_string_literal: true
+
+require 'yaml'
+
+namespace :api do
+  namespace :server do
+    task :start do
+      puts 'Starting API production server on port 1337 …'
+      sh 'rackup -D -P server.pid -E PRODUCTION -p 1337'
+      sleep(0.2)
+      pid = File.read('server.pid')
+      puts "Server running on PID: #{pid}"
+    end
+
+    task :stop do
+      puts 'Stopping server …'
+      pid = File.read('server.pid').to_i
+      sh "kill #{pid}"
+    end
+  end
+
+  task :start do
+    Rake::Task['db:create'].invoke
+    Rake::Task['api:server:start'].invoke
+  end
+end
+
+namespace :db do
+  database = YAML.load_file('config/database.yml')
+
+  task :create do
+    puts 'Creating databases …'
+    unless File.exist?(database['api']['database'])
+      sh "sqlite3 #{database['api']['database']} < db/schema.sql"
+    end
+  end
+
+  task :drop do
+    puts 'Dropping databases …'
+    sh "rm #{databases['development']['database']}"
+    sh "rm #{databases['test']['database']}"
+    sh "rm #{databases['production']['database']}"
+  end
+end

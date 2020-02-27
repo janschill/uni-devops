@@ -32,7 +32,7 @@ $ bundle install
 5. Create `.env` file with secret
 
 ```bash
-$ bundle exec rake env:secret
+$ bundle exec rake env:generate
 ```
 
 6. Create database (& seed it)
@@ -45,6 +45,6 @@ $ bundle exec rake db:seed
 7. Start server
 
 ```bash
-$ bundle exec rake minitwit:server:development
-$ bundle exec rake minitwit:server:production
+$ bundle exec rake app:server:development
+$ bundle exec rake app:server:production
 ```
