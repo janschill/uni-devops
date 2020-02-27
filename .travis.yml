@@ -1,7 +1,7 @@
-stages:
-  - test
-  - name: deploy
-    if: branch = production
+# stages:
+#   - test
+#   - name: deploy
+#     if: branch = production
 
 
 # branches:
@@ -11,12 +11,15 @@ stages:
 services:
   - docker
 
-jobs:
-include:
-  - stage: test
-    script: ./travis_stages/test
-  - stage: deploy
-    script: ./travis_stages/deploy
+deploy:
+  - provider: script
+    script: ./travis_stages/deploy.sh
+    on:
+      branch: master
+  - provider: script
+    script: ./travis_stages/test.sh
+    on:
+      branch: production
 
 # before_install:
 # - docker build -t freakency/devops .

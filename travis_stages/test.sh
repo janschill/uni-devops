@@ -1,1 +1,1 @@
-- docker build -t freakency/devops .
+docker build -t freakency/devops .
