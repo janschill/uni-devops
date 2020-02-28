@@ -1,7 +1,52 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
 body {
     background: #CAECE9;
     font-family: 'Trebuchet MS', sans-serif;
     font-size: 14px;
+    padding: 10px;
 }
 
 a {
@@ -14,12 +59,13 @@ a:hover {
 
 input[type="text"],
 input[type="password"] {
-    background: white;
     border: none;
     padding: 15px 10px;
     font-family: 'Trebuchet MS', sans-serif;
     font-size: 16px;
     color: black;
+    background-color: #eee;
+    border-bottom: 3px solid gray;
 }
 
 input[type="submit"] {
@@ -49,10 +95,16 @@ input[type="submit"]:hover {
 }
 
 .page h1 {
-    margin: 0;
-    padding: 10px 14px;
+    padding: 10px 0;
     color: black;
     font-weight: bold;
+    font-size: 24px;
+}
+
+.page h2 {
+    padding: 10px 0;
+    color: black;
+    font-size: 24px;
 }
 
 .page .navigation {
@@ -75,10 +127,6 @@ input[type="submit"]:hover {
 
 .page .navigation a:hover {
     color: #1eb4ff;
-}
-
-.page h2 {
-    margin-left: 10px;
 }
 
 .page .body {
@@ -129,6 +177,15 @@ input[type="submit"]:hover {
     margin: 10px 0;
     padding: 5px;
     border-bottom: 8px solid #eee;
+}
+
+.page .twitbox .twitbox__input {
+    background: white;
+    border: none;
+    padding: 15px 10px;
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 16px;
+    color: black;
 }
 
 .page .twitbox h3 {
