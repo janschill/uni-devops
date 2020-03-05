@@ -1,5 +1,8 @@
 .DS_Store
 .vscode
 *.db
+!grafana.db
 .bundle/
 deploy_key
+grafana-storage/plugins/*
+grafana-storage/sessions/*

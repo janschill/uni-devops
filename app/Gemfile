@@ -12,6 +12,8 @@ gem 'roda'
 gem 'sequel'
 gem 'sqlite3'
 gem 'tilt'
+gem 'prometheus-client'
+gem 'usagewatch_ext'
 
 group :development do
   gem 'faker'

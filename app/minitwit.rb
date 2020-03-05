@@ -6,6 +6,8 @@ require './controllers/user_controller'
 require './controllers/login_controller'
 require './controllers/register_controller'
 require './controllers/message_controller'
+require 'prometheus/client'
+require 'usagewatch_ext'
 
 module MiniTwit
   # Main class for the application routing
@@ -17,11 +19,26 @@ module MiniTwit
            key: ENV['SESSION_KEY'],
            secret: ENV['SESSION_RAND']
 
+    usw = Usagewatch
+
+    prometheus = Prometheus::Client.registry
+    http_requests_counter = prometheus.counter(:minitwit_app_http_requests, docstring: 'A counter of HTTP requests made to the app')
+    cpu_load_gauge = prometheus.gauge(:minitwit_app_cpu_load, docstring: 'A gauge of CPU load')
+    http_response_duration_histogram = prometheus.histogram(:minitwit_app_http_response_duration, docstring: 'A histogram tracking http response time')
+
     user = nil
+    response_start_time = nil
 
     before do
+      response_start_time = Time.now
       user = nil
       user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
+      http_requests_counter.increment
+      cpu_load_gauge.set(usw.uw_cpuused)
+    end
+
+    after do |_res|
+      http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
     route do |r|
