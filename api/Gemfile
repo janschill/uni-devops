@@ -5,10 +5,13 @@ source "https://rubygems.org"
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
 gem 'bcrypt'
-gem 'dotenv'
 gem 'json'
+gem 'rake'
 gem 'roda'
-gem 'rubocop', require: false
 gem 'sequel'
 gem 'sqlite3'
 gem 'tilt'
+
+group :developement do
+  gem 'rubocop', require: false
+end
