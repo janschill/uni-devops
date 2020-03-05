@@ -2,10 +2,10 @@ default:
   adapter: sqlite
 
 development:
-  database: /tmp/development.db
+  database: /var/www/db/development.db
 
 production:
-  database: /tmp/production.db
+  database: /var/www/db/production.db
 
 test:
-  database: /tmp/test.db
+  database: /var/www/db/test.db
