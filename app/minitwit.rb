@@ -7,7 +7,7 @@ require './controllers/login_controller'
 require './controllers/register_controller'
 require './controllers/message_controller'
 
-# rubocop:disable BlockLength
+# rubocop:disable BlockLength, ClassLength
 module MiniTwit
   # Main class for the application routing
   class App < Roda
@@ -36,6 +36,7 @@ module MiniTwit
           'page_title' => 'My timeline',
           'request_endpoint' => 'timeline'
         }
+        @offset = check_offset(r.params['offset'])
         @messages = Message.messages_by_user_id_and_followers(user.user_id)
         @user = user
         view('timeline')
@@ -46,7 +47,8 @@ module MiniTwit
           'page_title' => 'Public timeline'
         }
         @user = user
-        @messages = Message.latest_messages
+        @offset = check_offset(r.params['offset'])
+        @messages = Message.latest_messages(@offset)
         view('timeline')
       end
 
@@ -129,7 +131,17 @@ module MiniTwit
         view('timeline')
       end
     end
+
+    private
+
+    def check_offset(offset_from_request)
+      offset = 0
+      unless offset_from_request.nil? || offset_from_request == ''
+        offset_parsed = Integer(offset_from_request)
+        offset = offset_parsed if offset_parsed.positive?
+      end
+      offset
+    end
   end
 end
-
-# rubocop:enable BlockLength
+# rubocop:enable BlockLength, ClassLength

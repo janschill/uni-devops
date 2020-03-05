@@ -46,6 +46,6 @@ class UserController < ApplicationController
   end
 
   def messages_from_profile_user
-    Message.messages_by_user_id(@profile_user.user_id)
+    Message.messages_by_user_id(@profile_user.user_id, 0)
   end
 end
