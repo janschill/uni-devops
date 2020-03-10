@@ -13,26 +13,24 @@ class UserController < ApplicationController
     @target_user = User.where(user_id: target_user_id).first
   end
 
-  def attempt_follow()
-    if @logged_in_user.nil? || @target_user.nil?
-      return false
-    end
+  def attempt_follow
+    return false if @logged_in_user.nil? || @target_user.nil?
+
     Follower.new(
       whom_id: @target_user.user_id,
       who_id: @logged_in_user.user_id
     ).save_changes
-    return true
+    true
   end
 
-  def attempt_unfollow()
-    if @logged_in_user.nil? || @target_user.nil?
-      return false
-    end
+  def attempt_unfollow
+    return false if @logged_in_user.nil? || @target_user.nil?
+
     Follower.where(
       whom_id: @target_user.user_id,
       who_id: @logged_in_user.user_id
     ).delete
-    return true
+    true
   end
 
   def check_if_following_target_user

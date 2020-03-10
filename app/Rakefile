@@ -2,7 +2,6 @@
 
 require 'yaml'
 
-# rubocop:disable BlockLength
 namespace :app do
   namespace :server do
     task :development do
@@ -97,4 +96,3 @@ namespace :env do
     end
   end
 end
-# rubocop:enable BlockLength
