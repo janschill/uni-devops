@@ -36,3 +36,8 @@
   <p>There are no messages so far.</p>
 <% end %>
 </ul>
+<nav class="paginatior">
+  <a <%= "class=\"disabled\"" if @offset == 0  %> href="public?offset=<%= @offset - 10 %>">Previous</a>
+  …
+  <a <%= "class=\"disabled\"" if @messages.size != 10 %> href="public?offset=<%= @offset + 10 %>">Next</a>
+</nav>
