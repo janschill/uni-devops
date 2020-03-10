@@ -1,4 +1,6 @@
-Style/BlockLength:
+require: rubocop-rspec
+
+Metrics/BlockLength:
   Enabled: false
 
 Metrics/ClassLength:
@@ -14,4 +16,10 @@ Style/Documentation:
   Enabled: false
 
 Metrics/PerceivedComplexity:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+Style/FormatStringToken:
   Enabled: false

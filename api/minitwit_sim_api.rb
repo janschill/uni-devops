@@ -4,7 +4,7 @@ require 'roda'
 require './models'
 require 'bcrypt'
 require 'json'
-require 'uri'
+require 'cgi'
 
 module MiniTwit
   class SimAPI < Roda
@@ -80,7 +80,7 @@ module MiniTwit
         end
 
         r.is String do |username|
-          username = URI.unescape(username)
+          username = CGI.unescape(username)
           user = User.where(username: username).first
           if user.nil?
             response.status = 400
@@ -116,7 +116,7 @@ module MiniTwit
 
       r.on 'fllws' do
         r.is String do |username|
-          username = URI.unescape(username)
+          username = CGI.unescape(username)
           user = User.where(username: username).first
           if user.nil?
             response.status = 400

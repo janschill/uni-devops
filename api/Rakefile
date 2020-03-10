@@ -23,6 +23,11 @@ namespace :api do
     Rake::Task['db:create'].invoke
     Rake::Task['api:server:start'].invoke
   end
+
+  task :test do
+    puts 'Running tests …'
+    sh 'rubocop --require rubocop-rspec'
+  end
 end
 
 namespace :db do
@@ -30,9 +35,7 @@ namespace :db do
 
   task :create do
     puts 'Creating databases …'
-    unless File.exist?(database['production']['database'])
-      sh "sqlite3 #{database['production']['database']} < db/schema.sql"
-    end
+    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
   end
 
   task :drop do

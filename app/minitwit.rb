@@ -21,9 +21,7 @@ module MiniTwit
 
     before do
       user = nil
-      unless session['user_id'].nil?
-        user = User.where(user_id: session['user_id']).first
-      end
+      user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
     end
 
     route do |r|
