@@ -2,14 +2,14 @@
 <% if @user %>
   <% if @options['request_endpoint'].eql?('user_timeline') %>
   <div class="followstatus">
-    <% if @user.user_id.equal?(@profile_user.user_id) %>
+    <% if @user.user_id.equal?(@target_user.user_id) %>
       <strong>This is you!</strong>
     <% elsif @is_follower %>
       <strong>You are currently following this user.</strong>
-      <a class="unfollow" href="/<%= @profile_user.username %>/unfollow">Unfollow user</a>
+      <a class="unfollow" href="/user/<%= @target_user.user_id %>/unfollow">Unfollow user</a>
     <% else %>
       <strong>You are not follwing this user.</strong>
-      <a class="follow" href="/<%= @profile_user.username %>/follow">Follow user</a>
+      <a class="follow" href="/user/<%= @target_user.user_id %>/follow">Follow user</a>
     <% end %>
   </div>
   <% elsif @options['request_endpoint'].eql?('timeline')%>
@@ -27,13 +27,13 @@
   <li>
     <img src="data:image/jpeg;base64,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" height="40" width="40">
     <p>
-      <strong><a href="<%= message.user.username %>"><%= message.user.username %></a></strong><br>
+      <strong><a href="/user/<%= message.user.user_id %>"><%= message.user.username %></a></strong><br>
       <%= message.text %>
       <small>&mdash; <%= Time.at(message.pub_date).strftime('%F') %></small>
   </li>
 <% end %>
 <% else %>
-  <p>There's no message so far.</p>
+  <p>There are no messages so far.</p>
 <% end %>
 </ul>
 <nav class="paginatior">

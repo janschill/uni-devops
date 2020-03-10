@@ -30,6 +30,8 @@ module MiniTwit
     route do |r|
       r.assets
 
+      @error = nil
+
       r.root do
         r.redirect('public') if user.nil?
         @options = {
@@ -55,50 +57,53 @@ module MiniTwit
       # TODO: use 403 for redirect
       r.post 'add_message' do
         r.redirect('/') if session['user_id'].nil?
-        message_controller = MessageController.new(user)
-        message_controller.add_message(request)
+        message_controller = MessageController.new(r, user)
+        message_controller.add_message()
         r.redirect('/')
       end
 
       r.on 'login' do
-        login_controller = LoginController.new(user)
         @options = { 'page_title' => 'Login' }
 
         r.get do
-          @error = nil
           request.redirect('/') unless user.nil?
           view('login')
         end
 
         r.post do
-          @error = nil
-          user = login_controller.login_user(request)
-
-          if user.nil?
-            @error = 'Invalid username'
-          elsif !user.password == r.params['password']
-            @error = 'Invalid password'
-          else
+          login_controller = LoginController.new(r)
+          error, user = login_controller.attempt_login_user()
+          if error.nil?
             session[:user_id] = user.user_id
             r.redirect('/')
+          else
+            @error = error
+            view('login')
           end
-          view('login')
+
         end
       end
 
       r.on 'register' do
-        register_controller = RegisterController.new(user)
-        @options = { 'page_title' => 'Login' }
+        register_controller = RegisterController.new(r)
+        @options = { 'page_title' => 'Register' }
 
         r.get do
-          @error = nil
           request.redirect('/') unless user.nil?
           view('register')
         end
 
         r.post do
-          @error = register_controller.register_user(request)
-          view('register')
+          error, user = register_controller.register_user()
+          if error.nil? && user.nil?
+            r.redirect('/')
+          elsif user.nil?
+            @error = error
+            view('register')
+          else
+            session[:user_id] = user.user_id
+            r.redirect('/')
+          end
         end
       end
 
@@ -107,28 +112,43 @@ module MiniTwit
         r.redirect('/')
       end
 
-      r.on :username do |username|
-        user_controller = UserController.new(username, user)
-        r.redirect('/') if user_controller.profile_user.nil?
 
-        r.on 'follow' do
-          user_controller.follow(r)
-        end
+      r.on 'user' do 
+          r.on :target_user_id do |target_user_id|
 
-        r.on 'unfollow' do
-          user_controller.unfollow(r)
-        end
+            user_controller = UserController.new(user, target_user_id)
+            if user_controller.target_user.nil?
+              r.redirect('/')
+            end
 
-        @options = {
-          'page_title' => "#{username}'s timeline",
-          'request_endpoint' => 'user_timeline'
-        }
-        @user = user
-        @profile_user = user_controller.profile_user
-        @is_follower = user_controller.check_if_follower
-        @messages = user_controller.messages_from_profile_user
+            r.on 'follow' do 
+              if user_controller.attempt_follow
+                r.redirect("/user/#{user_controller.target_user.user_id}")
+              else
+                r.redirect('/')
+              end
+            end
 
-        view('timeline')
+            r.on 'unfollow' do 
+              if user_controller.attempt_unfollow
+                r.redirect("/user/#{user_controller.target_user.user_id}")
+              else
+                r.redirect('/')
+              end
+            end
+
+            @options = {
+              'page_title' => "#{user_controller.target_user.username}'s timeline",
+              'request_endpoint' => 'user_timeline'
+            }
+
+            @user = user
+            @target_user = user_controller.target_user
+            @is_follower = user_controller.check_if_following_target_user
+            @messages = user_controller.messages_from_target_user
+            view('timeline')
+
+          end
       end
     end
 
