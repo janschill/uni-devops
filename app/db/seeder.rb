@@ -4,8 +4,13 @@ require 'bcrypt'
 require 'faker'
 require 'sequel'
 require 'literate_randomizer'
+require 'yaml'
 
-DB = Sequel.connect('sqlite://db/development.db')
+database = YAML.load_file('config/database.yml')
+DB = Sequel.connect(
+  "#{database['default']['adapter']}://"\
+  "#{database['development']['database']}"
+)
 DB[:users].truncate
 DB[:messages].truncate
 DB[:followers].truncate
