@@ -1,0 +1,52 @@
+version: '3.5'
+
+networks:
+  main:
+    name: itu-minitwit-network
+
+volumes:
+  database: '/var/www/db'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    image: minitwit/app
+    container_name: minitwit
+    ports:
+      - "80:80"
+    networks:
+      - main
+    depends_on:
+      - grafana
+      - prometheus
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: minitwit/api
+    networks:
+      - main
+    depends_on:
+      - app
+      - grafana
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - main
+
+  grafana:
+    image: grafana/grafana:4.5.2
+    ports:
+      - "3000:3000"
+    networks:
+      - main
