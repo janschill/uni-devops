@@ -6,8 +6,9 @@ require './controllers/user_controller'
 require './controllers/login_controller'
 require './controllers/register_controller'
 require './controllers/message_controller'
+require 'prometheus/client'
+require 'usagewatch_ext'
 
-# rubocop:disable BlockLength
 module MiniTwit
   # Main class for the application routing
   class App < Roda
@@ -18,17 +19,32 @@ module MiniTwit
            key: ENV['SESSION_KEY'],
            secret: ENV['SESSION_RAND']
 
+    usw = Usagewatch
+
+    prometheus = Prometheus::Client.registry
+    http_requests_counter = prometheus.counter(:minitwit_app_http_requests, docstring: 'A counter of HTTP requests made to the app')
+    cpu_load_gauge = prometheus.gauge(:minitwit_app_cpu_load, docstring: 'A gauge of CPU load')
+    http_response_duration_histogram = prometheus.histogram(:minitwit_app_http_response_duration, docstring: 'A histogram tracking http response time')
+
     user = nil
+    response_start_time = nil
 
     before do
+      response_start_time = Time.now
       user = nil
-      unless session['user_id'].nil?
-        user = User.where(user_id: session['user_id']).first
-      end
+      user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
+      http_requests_counter.increment
+      cpu_load_gauge.set(usw.uw_cpuused)
+    end
+
+    after do |_res|
+      http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
     route do |r|
       r.assets
+
+      @error = nil
 
       r.root do
         r.redirect('public') if user.nil?
@@ -36,6 +52,7 @@ module MiniTwit
           'page_title' => 'My timeline',
           'request_endpoint' => 'timeline'
         }
+        @offset = check_offset(r.params['offset'])
         @messages = Message.messages_by_user_id_and_followers(user.user_id)
         @user = user
         view('timeline')
@@ -46,57 +63,60 @@ module MiniTwit
           'page_title' => 'Public timeline'
         }
         @user = user
-        @messages = Message.latest_messages
+        @offset = check_offset(r.params['offset'])
+        @messages = Message.latest_messages(@offset)
         view('timeline')
       end
 
       # TODO: use 403 for redirect
       r.post 'add_message' do
         r.redirect('/') if session['user_id'].nil?
-        message_controller = MessageController.new(user)
-        message_controller.add_message(request)
+        message_controller = MessageController.new(r, user)
+        message_controller.add_message
         r.redirect('/')
       end
 
       r.on 'login' do
-        login_controller = LoginController.new(user)
         @options = { 'page_title' => 'Login' }
 
         r.get do
-          @error = nil
           request.redirect('/') unless user.nil?
           view('login')
         end
 
         r.post do
-          @error = nil
-          user = login_controller.login_user(request)
-
-          if user.nil?
-            @error = 'Invalid username'
-          elsif !user.password == r.params['password']
-            @error = 'Invalid password'
-          else
+          login_controller = LoginController.new(r)
+          error, user = login_controller.attempt_login_user
+          if error.nil?
             session[:user_id] = user.user_id
             r.redirect('/')
+          else
+            @error = error
+            view('login')
           end
-          view('login')
         end
       end
 
       r.on 'register' do
-        register_controller = RegisterController.new(user)
-        @options = { 'page_title' => 'Login' }
+        register_controller = RegisterController.new(r)
+        @options = { 'page_title' => 'Register' }
 
         r.get do
-          @error = nil
           request.redirect('/') unless user.nil?
           view('register')
         end
 
         r.post do
-          @error = register_controller.register_user(request)
-          view('register')
+          error, user = register_controller.register_user
+          if error.nil? && user.nil?
+            r.redirect('/')
+          elsif user.nil?
+            @error = error
+            view('register')
+          else
+            session[:user_id] = user.user_id
+            r.redirect('/')
+          end
         end
       end
 
@@ -105,31 +125,50 @@ module MiniTwit
         r.redirect('/')
       end
 
-      r.on :username do |username|
-        user_controller = UserController.new(username, user)
-        r.redirect('/') if user_controller.profile_user.nil?
+      r.on 'user' do
+        r.on :target_user_id do |target_user_id|
+          user_controller = UserController.new(user, target_user_id)
+          r.redirect('/') if user_controller.target_user.nil?
 
-        r.on 'follow' do
-          user_controller.follow(r)
+          r.on 'follow' do
+            if user_controller.attempt_follow
+              r.redirect("/user/#{user_controller.target_user.user_id}")
+            else
+              r.redirect('/')
+            end
+          end
+
+          r.on 'unfollow' do
+            if user_controller.attempt_unfollow
+              r.redirect("/user/#{user_controller.target_user.user_id}")
+            else
+              r.redirect('/')
+            end
+          end
+
+          @options = {
+            'page_title' => "#{user_controller.target_user.username}'s timeline",
+            'request_endpoint' => 'user_timeline'
+          }
+
+          @user = user
+          @target_user = user_controller.target_user
+          @is_follower = user_controller.check_if_following_target_user
+          @messages = user_controller.messages_from_target_user
+          view('timeline')
         end
-
-        r.on 'unfollow' do
-          user_controller.unfollow(r)
-        end
-
-        @options = {
-          'page_title' => "#{username}'s timeline",
-          'request_endpoint' => 'user_timeline'
-        }
-        @user = user
-        @profile_user = user_controller.profile_user
-        @is_follower = user_controller.check_if_follower
-        @messages = user_controller.messages_from_profile_user
-
-        view('timeline')
       end
+    end
+
+    private
+
+    def check_offset(offset_from_request)
+      offset = 0
+      unless offset_from_request.nil? || offset_from_request == ''
+        offset_parsed = Integer(offset_from_request)
+        offset = offset_parsed if offset_parsed.positive?
+      end
+      offset
     end
   end
 end
-
-# rubocop:enable BlockLength

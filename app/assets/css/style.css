@@ -57,6 +57,31 @@ a:hover {
     color: #333;
 }
 
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+    color: #eee;
+    text-decoration: none;
+}
+
+.paginatior {
+    padding: 20px 10px;
+}
+
+.link--no-style {
+    color: #333;
+    text-decoration: none;
+}
+
+.actions {
+    padding: 5px 0;
+}
+
+.form__label {
+    padding: 5px 0;
+    display: block;
+}
+
 input[type="text"],
 input[type="password"] {
     border: none;

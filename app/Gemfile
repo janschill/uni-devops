@@ -1,20 +1,23 @@
 # frozen_string_literal: true
 
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 gem 'bcrypt'
 gem 'dotenv'
 gem 'json'
+gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
 gem 'sequel'
 gem 'sqlite3'
 gem 'tilt'
+gem 'usagewatch_ext'
 
 group :development do
   gem 'faker'
   gem 'literate_randomizer'
   gem 'rubocop', require: false
+  gem 'rubocop-rspec', require: false
 end

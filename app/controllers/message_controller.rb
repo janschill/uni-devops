@@ -6,11 +6,12 @@ require './controllers/application_controller'
 class MessageController < ApplicationController
   attr_accessor :logged_in_user
 
-  def initialize(logged_in_user)
-    @logged_in_user = logged_in_user
+  def initialize(request, user)
+    super(request)
+    @logged_in_user = user
   end
 
-  def add_message(request)
+  def add_message
     text = request.params['text']
     if text != ''
       Message.new(

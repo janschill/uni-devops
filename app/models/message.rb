@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-# rubocop:disable BlockLength
-# Message posted by users
 class Message < Sequel::Model
   many_to_one :user
 
   dataset_module do
-    def latest_messages
+    def latest_messages(offset)
       Message
         .order(Sequel.desc(:pub_date))
         .limit(10)
+        .offset(offset)
         .all
     end
 
-    def messages_by_user_id(user_id)
+    def messages_by_user_id(user_id, offset)
       Message
         .where(user_id: user_id)
         .order(Sequel.desc(:pub_date))
         .limit(10)
+        .offset(offset)
         .all
     end
 
@@ -42,4 +42,3 @@ class Message < Sequel::Model
     end
   end
 end
-# rubocop:enable BlockLength
