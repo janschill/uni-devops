@@ -15,6 +15,7 @@ GEM
     parallel (1.19.1)
     parser (2.7.0.2)
       ast (~> 2.4.0)
+    prometheus-client (2.0.0)
     rack (2.1.2)
     rainbow (3.0.0)
     rake (13.0.1)
@@ -34,6 +35,9 @@ GEM
     sqlite3 (1.4.2)
     tilt (2.0.10)
     unicode-display_width (1.6.1)
+    usagewatch (0.0.7)
+    usagewatch_ext (0.2.1)
+      usagewatch (~> 0.0.6)
 
 PLATFORMS
   ruby
@@ -44,6 +48,7 @@ DEPENDENCIES
   faker
   json
   literate_randomizer
+  prometheus-client
   rake
   roda
   rubocop
@@ -51,6 +56,7 @@ DEPENDENCIES
   sequel
   sqlite3
   tilt
+  usagewatch_ext
 
 BUNDLED WITH
    2.1.4

@@ -5,10 +5,27 @@ require './models'
 require 'bcrypt'
 require 'json'
 require 'cgi'
+require 'prometheus/client'
 
 module MiniTwit
   class SimAPI < Roda
+    plugin :hooks
+
     latest = 0
+    response_start_time = nil
+
+    prometheus = Prometheus::Client.registry
+    http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to the api')
+    http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time')
+
+    before do
+      response_start_time = Time.now
+      http_requests_counter.increment()
+    end
+
+    after do |res|
+      http_response_duration_histogram.observe(Time.now - response_start_time)
+    end
 
     route do |r|
       r.get 'latest' do
@@ -177,4 +194,3 @@ module MiniTwit
     end
   end
 end
-# rubocop:enable
