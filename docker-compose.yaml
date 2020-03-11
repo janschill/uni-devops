@@ -10,7 +10,7 @@ services:
     image: freakency/devops
     container_name: minitwit
     volumes:
-      - /var/www/db:/var/www/db
+      - /root/db:/var/www/db
     ports:
       - "80:80"
       - "1337:1337"
