@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable BlockLength
-# Message posted by users
 class Message < Sequel::Model
   many_to_one :user
 
@@ -42,4 +40,3 @@ class Message < Sequel::Model
     end
   end
 end
-# rubocop:enable BlockLength

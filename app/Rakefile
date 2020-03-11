@@ -2,7 +2,6 @@
 
 require 'yaml'
 
-# rubocop:disable BlockLength
 namespace :app do
   namespace :server do
     task :development do
@@ -36,12 +35,11 @@ namespace :app do
     Rake::Task['app:server:production'].invoke
   end
 
-  # TODO: Implement tests
   task :test do
     puts 'Running tests …'
     ENV['APP_ENVIRONMENT'] ||= 'test'
+    sh 'rubocop --require rubocop-rspec'
   end
-  # TODO: Implement flag command
 end
 
 namespace :db do
@@ -49,15 +47,9 @@ namespace :db do
 
   task :create do
     puts 'Creating databases …'
-    unless File.exist?(database['development']['database'])
-      sh "sqlite3 #{database['development']['database']} < db/schema.sql"
-    end
-    unless File.exist?(database['production']['database'])
-      sh "sqlite3 #{database['production']['database']} < db/schema.sql"
-    end
-    unless File.exist?(database['test']['database'])
-      sh "sqlite3 #{database['test']['database']} < db/schema.sql"
-    end
+    sh "sqlite3 #{database['development']['database']} < db/schema.sql" unless File.exist?(database['development']['database'])
+    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
+    sh "sqlite3 #{database['test']['database']} < db/schema.sql" unless File.exist?(database['test']['database'])
   end
 
   task :seed do
@@ -97,4 +89,3 @@ namespace :env do
     end
   end
 end
-# rubocop:enable BlockLength

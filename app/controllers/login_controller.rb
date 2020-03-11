@@ -4,12 +4,11 @@ require './controllers/application_controller'
 
 # Handle authentication: login/register
 class LoginController < ApplicationController
-  
   def initialize(request)
     super(request)
   end
 
-  def attempt_login_user()
+  def attempt_login_user
     user = User.where(username: @request.params['username']).first
     error = nil
     if user.nil?
@@ -17,9 +16,7 @@ class LoginController < ApplicationController
     elsif !user.password == @request.params['password']
       error = 'Invalid password'
     end
-      
-    return error, user
-    
+
+    [error, user]
   end
 end
-

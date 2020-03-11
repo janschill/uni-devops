@@ -7,7 +7,6 @@ require './controllers/login_controller'
 require './controllers/register_controller'
 require './controllers/message_controller'
 
-# rubocop:disable BlockLength, ClassLength
 module MiniTwit
   # Main class for the application routing
   class App < Roda
@@ -22,9 +21,7 @@ module MiniTwit
 
     before do
       user = nil
-      unless session['user_id'].nil?
-        user = User.where(user_id: session['user_id']).first
-      end
+      user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
     end
 
     route do |r|
@@ -58,7 +55,7 @@ module MiniTwit
       r.post 'add_message' do
         r.redirect('/') if session['user_id'].nil?
         message_controller = MessageController.new(r, user)
-        message_controller.add_message()
+        message_controller.add_message
         r.redirect('/')
       end
 
@@ -72,7 +69,7 @@ module MiniTwit
 
         r.post do
           login_controller = LoginController.new(r)
-          error, user = login_controller.attempt_login_user()
+          error, user = login_controller.attempt_login_user
           if error.nil?
             session[:user_id] = user.user_id
             r.redirect('/')
@@ -80,7 +77,6 @@ module MiniTwit
             @error = error
             view('login')
           end
-
         end
       end
 
@@ -94,7 +90,7 @@ module MiniTwit
         end
 
         r.post do
-          error, user = register_controller.register_user()
+          error, user = register_controller.register_user
           if error.nil? && user.nil?
             r.redirect('/')
           elsif user.nil?
@@ -112,43 +108,38 @@ module MiniTwit
         r.redirect('/')
       end
 
+      r.on 'user' do
+        r.on :target_user_id do |target_user_id|
+          user_controller = UserController.new(user, target_user_id)
+          r.redirect('/') if user_controller.target_user.nil?
 
-      r.on 'user' do 
-          r.on :target_user_id do |target_user_id|
-
-            user_controller = UserController.new(user, target_user_id)
-            if user_controller.target_user.nil?
+          r.on 'follow' do
+            if user_controller.attempt_follow
+              r.redirect("/user/#{user_controller.target_user.user_id}")
+            else
               r.redirect('/')
             end
-
-            r.on 'follow' do 
-              if user_controller.attempt_follow
-                r.redirect("/user/#{user_controller.target_user.user_id}")
-              else
-                r.redirect('/')
-              end
-            end
-
-            r.on 'unfollow' do 
-              if user_controller.attempt_unfollow
-                r.redirect("/user/#{user_controller.target_user.user_id}")
-              else
-                r.redirect('/')
-              end
-            end
-
-            @options = {
-              'page_title' => "#{user_controller.target_user.username}'s timeline",
-              'request_endpoint' => 'user_timeline'
-            }
-
-            @user = user
-            @target_user = user_controller.target_user
-            @is_follower = user_controller.check_if_following_target_user
-            @messages = user_controller.messages_from_target_user
-            view('timeline')
-
           end
+
+          r.on 'unfollow' do
+            if user_controller.attempt_unfollow
+              r.redirect("/user/#{user_controller.target_user.user_id}")
+            else
+              r.redirect('/')
+            end
+          end
+
+          @options = {
+            'page_title' => "#{user_controller.target_user.username}'s timeline",
+            'request_endpoint' => 'user_timeline'
+          }
+
+          @user = user
+          @target_user = user_controller.target_user
+          @is_follower = user_controller.check_if_following_target_user
+          @messages = user_controller.messages_from_target_user
+          view('timeline')
+        end
       end
     end
 
@@ -164,4 +155,3 @@ module MiniTwit
     end
   end
 end
-# rubocop:enable BlockLength, ClassLength

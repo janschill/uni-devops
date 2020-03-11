@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable BlockLength, AbcSize, MethodLength
-# Message posted by users
 class Message < Sequel::Model
   many_to_one :user
 
@@ -44,4 +42,3 @@ class Message < Sequel::Model
     end
   end
 end
-# rubocop:enable BlockLength, AbcSize, MethodLength

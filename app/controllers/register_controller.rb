@@ -5,12 +5,11 @@ require 'bcrypt'
 
 # Write user to database
 class RegisterController < ApplicationController
-
   def initialize(request)
     super(request)
   end
 
-  def register_user()
+  def register_user
     user = nil
     error = nil
     username = @request.params['username']
@@ -25,7 +24,7 @@ class RegisterController < ApplicationController
       error = 'You have to enter a password'
     elsif password != password2
       error = 'Password do not match'
-    end 
+    end
     other_user = User.where(username: username).first
 
     if !other_user.nil?
@@ -38,6 +37,6 @@ class RegisterController < ApplicationController
       ).save_changes
       user.save_changes
     end
-    return error, user
+    [error, user]
   end
 end

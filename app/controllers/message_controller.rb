@@ -11,7 +11,7 @@ class MessageController < ApplicationController
     @logged_in_user = user
   end
 
-  def add_message()
+  def add_message
     text = request.params['text']
     if text != ''
       Message.new(

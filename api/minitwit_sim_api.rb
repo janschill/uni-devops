@@ -4,12 +4,9 @@ require 'roda'
 require './models'
 require 'bcrypt'
 require 'json'
-require 'uri'
+require 'cgi'
 
-# rubocop:disable ClassLength, BlockLength
-# MiniTwit API
 module MiniTwit
-  # MiniTwit API
   class SimAPI < Roda
     latest = 0
 
@@ -83,7 +80,7 @@ module MiniTwit
         end
 
         r.is String do |username|
-          username = URI.unescape(username)
+          username = CGI.unescape(username)
           user = User.where(username: username).first
           if user.nil?
             response.status = 400
@@ -119,7 +116,7 @@ module MiniTwit
 
       r.on 'fllws' do
         r.is String do |username|
-          username = URI.unescape(username)
+          username = CGI.unescape(username)
           user = User.where(username: username).first
           if user.nil?
             response.status = 400
@@ -180,4 +177,4 @@ module MiniTwit
     end
   end
 end
-# rubocop:enable ClassLength, BlockLength
+# rubocop:enable
