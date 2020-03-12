@@ -20,10 +20,10 @@ module MiniTwit
 
     before do
       response_start_time = Time.now
-      http_requests_counter.increment()
+      http_requests_counter.increment
     end
 
-    after do |res|
+    after do |_res|
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
