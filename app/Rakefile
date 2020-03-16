@@ -40,6 +40,13 @@ namespace :app do
     ENV['APP_ENVIRONMENT'] ||= 'test'
     sh 'rubocop --require rubocop-rspec'
   end
+
+  require 'rubycritic/rake_task'
+
+  RubyCritic::RakeTask.new do |task|
+    task.options = '--mode-ci --format json --no-browser'
+    task.verbose = true
+  end
 end
 
 namespace :db do
