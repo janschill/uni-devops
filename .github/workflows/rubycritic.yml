@@ -32,7 +32,7 @@ jobs:
       run: |
         gem install bundler
         bundle install --jobs 4 --retry 3
-        bundle exec rake app:rubycritic
+        bundle exec rake api:rubycritic
       working-directory: ./api
     - name: Upload artifact
       uses: actions/upload-artifact@v1
