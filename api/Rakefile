@@ -28,6 +28,13 @@ namespace :api do
     puts 'Running tests …'
     sh 'rubocop --require rubocop-rspec'
   end
+
+  require 'rubycritic/rake_task'
+
+  RubyCritic::RakeTask.new do |task|
+    task.options = '--mode-ci --format json --no-browser --minimum-score=90'
+    task.verbose = true
+  end
 end
 
 namespace :db do
