@@ -16,7 +16,7 @@ RUN bundle install
 
 WORKDIR /var/www
 
-COPY ./* /var/www/api/
+COPY ./ /var/www/api/
 RUN cd api && \
     bundle
 

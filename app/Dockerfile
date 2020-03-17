@@ -16,7 +16,7 @@ RUN bundle install
 
 WORKDIR /var/www
 
-COPY ./* /var/www/app/
+COPY ./ /var/www/app/
 RUN cd app && \
     bundle
 
