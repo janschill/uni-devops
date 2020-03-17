@@ -1,0 +1,30 @@
+name: 'RubyCritic'
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update
+      run: sudo apt-get update
+    - uses: actions/checkout@v2
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.6.x
+    - name: Install sqlite3 headers
+      run: sudo apt-get install libsqlite3-dev
+    - name: Build and test with Rake
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3
+        bundle exec rake app:rubycritic
+      working-directory: ./app
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: rubycritic-report
+        path: 'app/tmp/rubycritic'
