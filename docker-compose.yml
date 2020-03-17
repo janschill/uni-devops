@@ -2,18 +2,14 @@ version: '3.5'
 
 networks:
   main:
-    name: itu-minitwit-network
-
-volumes:
-  database: '/var/www/db'
+    driver: bridge
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: app/Dockerfile
-    image: minitwit/app
-    container_name: minitwit
+    image: freakency/devops_minitwit_app
+    container_name: devops_minitwit_app
+    volumes:
+      - /root/db:/var/www/db
     ports:
       - "80:80"
     networks:
@@ -23,10 +19,12 @@ services:
       - prometheus
 
   api:
-    build:
-      context: .
-      dockerfile: api/Dockerfile
-    image: minitwit/api
+    image: freakency/devops_minitwit_api
+    container_name: devops_minitwit_api
+    volumes:
+      - /root/db:/var/www/db
+    ports:
+      - "1337:1337"
     networks:
       - main
     depends_on:

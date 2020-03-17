@@ -9,14 +9,14 @@ RUN apk add build-base && \
 
 # Make sure Gems are cached
 WORKDIR /var/www/
-COPY api/Gemfile* /tmp/apigems/
+COPY Gemfile* /tmp/apigems/
 
 WORKDIR /tmp/apigems
 RUN bundle install
 
 WORKDIR /var/www
 
-COPY ./api /var/www/api
+COPY ./* /var/www/api/
 RUN cd api && \
     bundle
 
