@@ -17,7 +17,7 @@ jobs:
         ruby-version: 2.6.x
     - name: Install sqlite3 headers
       run: sudo apt-get install libsqlite3-dev
-    - name: Build and test with Rake
+    - name: Run RubyCritic on APP
       run: |
         gem install bundler
         bundle install --jobs 4 --retry 3
@@ -26,5 +26,16 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v1
       with:
-        name: rubycritic-report
+        name: app-rubycritic-report
+        path: 'app/tmp/rubycritic'
+    - name: Run RubyCritic on API
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3
+        bundle exec rake app:rubycritic
+      working-directory: ./api
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: api-rubycritic-report
         path: 'app/tmp/rubycritic'
