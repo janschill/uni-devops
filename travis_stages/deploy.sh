@@ -1,6 +1,8 @@
-docker build -t freakency/devops .
+docker build -t freakency/devops_minitwit_app app/
+docker build -t freakency/devops_minitwit_api api/
 echo "$docker_password" | docker login -u "$docker_user" --password-stdin
-docker push freakency/devops
+docker push freakency/devops_minitwit_app
+docker push freakency/devops_minitwit_api
 openssl aes-256-cbc -K $encrypted_9a76d64de8ba_key -iv $encrypted_9a76d64de8ba_iv -in deploy_key.enc -out ./deploy_key -d
 eval "$(ssh-agent -s)"
 chmod 600 ./deploy_key
