@@ -10,8 +10,8 @@ jobs:
   include:
     - stage: test
       script: 
-        - docker build -t freakency/devops_minitwit_app .
-        - docker build -t freakency/devops_minitwit_api .
+        - docker build -t freakency/devops_minitwit_app app/
+        - docker build -t freakency/devops_minitwit_api api/
 
     - stage: deploy
       provider: script
