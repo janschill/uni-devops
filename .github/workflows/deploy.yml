@@ -1,7 +1,7 @@
 name: Deploy files
 
 on:
-  push:
+  pull_request:
     branches: [ production ]
 
 jobs:
