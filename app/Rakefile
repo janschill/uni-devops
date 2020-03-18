@@ -91,8 +91,8 @@ namespace :env do
       sh 'cp .env.sample .env'
       require 'securerandom'
       random_string = SecureRandom.alphanumeric(64)
-      sh "sed -i '' 's/SESSION_KEY=/SESSION_KEY=devops/g' .env"
-      sh "sed -i '' 's/SESSION_RAND=/SESSION_RAND=#{random_string}/g' .env"
+      sh "sed -i 's/SESSION_KEY=/SESSION_KEY=devops/g' .env"
+      sh "sed -i 's/SESSION_RAND=/SESSION_RAND=#{random_string}/g' .env"
     end
   end
 end
