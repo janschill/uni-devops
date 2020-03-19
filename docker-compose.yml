@@ -5,18 +5,29 @@ networks:
     driver: bridge
 
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx
+    networks:
+      - main
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
   app:
     image: freakency/devops_minitwit_app
     container_name: devops_minitwit_app
     volumes:
       - /root/db:/var/www/db
-    ports:
-      - "80:80"
     networks:
       - main
     depends_on:
       - grafana
       - prometheus
+      - nginx-proxy
+    environment:
+      - VIRTUAL_HOST=minitwit.janschill.de
 
   api:
     image: freakency/devops_minitwit_api
@@ -31,6 +42,9 @@ services:
       - app
       - grafana
       - prometheus
+      - nginx-proxy
+    environment:
+      - VIRTUAL_HOST=minitwit-api.janschill.de
 
   prometheus:
     image: prom/prometheus
