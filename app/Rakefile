@@ -101,7 +101,7 @@ end
 namespace :log do
   task :create do
     puts 'Creating APP log …'
-    sh "mkdir /var/www/log" unless File.directory?('/var/www/log')
-    sh "touch /var/www/log/app.log" unless File.exists?('/var/www/log/app.log')  
+    sh 'mkdir /var/www/log' unless File.directory?('/var/www/log')
+    sh 'touch /var/www/log/app.log' unless File.exist?('/var/www/log/app.log')
   end
 end

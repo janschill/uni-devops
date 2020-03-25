@@ -21,7 +21,7 @@ module MiniTwit
            key: ENV['SESSION_KEY'],
            secret: ENV['SESSION_RAND']
 
-    logger = Logger.new('/var/www/log/app.log', 10, 1024000)
+    logger = Logger.new('/var/www/log/app.log', 10, 1_024_000)
     logger.info('Initializing APP')
 
     usw = Usagewatch
@@ -37,18 +37,18 @@ module MiniTwit
     log_prefix = nil
 
     before do
-      log_prefix = "log_req_id:" + SecureRandom.hex(10)
+      log_prefix = 'log_req_id:' + SecureRandom.hex(10)
       response_start_time = Time.now
       user = nil
       user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
-      log_prefix = log_prefix + ";user_id:" + session['user_id'].to_s unless session['user_id'].nil?
-      log_prefix = log_prefix + ": "
+      log_prefix += ';user_id:' + session['user_id'].to_s unless session['user_id'].nil?
+      log_prefix += + ': '
       http_requests_counter.increment
       cpu_load_gauge.set(usw.uw_cpuused)
     end
 
     after do |res|
-      log_text = log_prefix + "response with status " + res[0].to_s
+      log_text = log_prefix + 'response with status ' + res[0].to_s
       logger.info(log_text)
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
@@ -56,15 +56,10 @@ module MiniTwit
     route do |r|
       r.assets
 
-      
-
       body = nil
 
-      log_text = log_prefix +  r.request_method + ' request to ' + r.path.to_s
-      if r.post?
-        log_text = log_text + ', body: ' + r.params.to_s
-      end
-      
+      log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
+      log_text += ', body: ' + r.params.to_s if r.post?
       logger.info(log_text)
 
       @error = nil

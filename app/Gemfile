@@ -7,6 +7,7 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gem 'bcrypt'
 gem 'dotenv'
 gem 'json'
+gem 'logger'
 gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
@@ -14,7 +15,6 @@ gem 'sequel'
 gem 'sqlite3'
 gem 'tilt'
 gem 'usagewatch_ext'
-gem 'logger'
 
 group :development do
   gem 'faker'

@@ -14,7 +14,7 @@ module MiniTwit
   class SimAPI < Roda
     plugin :hooks
 
-    logger = Logger.new('/var/www/log/api.log', 10, 1024000)
+    logger = Logger.new('/var/www/log/api.log', 10, 1_024_000)
     logger.info('Initializing API')
 
     latest = 0
@@ -28,14 +28,14 @@ module MiniTwit
     log_prefix = nil
 
     before do |r|
-      log_prefix = "log_req_id:" + SecureRandom.hex(10) + ": "
+      log_prefix = 'log_req_id:' + SecureRandom.hex(10) + ': '
       response_start_time = Time.now
       http_requests_counter.increment
     end
 
     after do |res|
-      log_text = log_prefix + "response with status " + res[0].to_s
-      log_text = log_text + ", body: " + res[2][0] unless res[2].nil? || res[2].empty? || res[2][0].to_s == ""
+      log_text = log_prefix + 'response with status ' + res[0].to_s
+      log_text += ', body: ' + res[2][0] unless res[2].nil? || res[2].empty? || res[2][0].to_s == ''
       logger.info(log_text)
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
@@ -46,10 +46,10 @@ module MiniTwit
 
       body = nil
 
-      log_text = log_prefix +  r.request_method + ' request to ' + r.path.to_s
+      log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
       if r.post?
         body = JSON.parse(r.body.read)
-        log_text = log_text + ', body: ' + body.to_s
+        log_text += ', body: ' + body.to_s
       end
       
       logger.info(log_text)
