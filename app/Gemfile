@@ -14,6 +14,7 @@ gem 'sequel'
 gem 'sqlite3'
 gem 'tilt'
 gem 'usagewatch_ext'
+gem 'logger'
 
 group :development do
   gem 'faker'

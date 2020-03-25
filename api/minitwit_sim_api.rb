@@ -6,28 +6,54 @@ require 'bcrypt'
 require 'json'
 require 'cgi'
 require 'prometheus/client'
+require 'logger'
+require 'securerandom'
+
 
 module MiniTwit
   class SimAPI < Roda
     plugin :hooks
 
+    logger = Logger.new('/var/www/log/api.log', 10, 1024000)
+    logger.info('Initializing API')
+
     latest = 0
     response_start_time = nil
+    
 
     prometheus = Prometheus::Client.registry
     http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to the api')
     http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time')
 
-    before do
+    log_prefix = nil
+
+    before do |r|
+      log_prefix = "log_req_id:" + SecureRandom.hex(10) + ": "
       response_start_time = Time.now
       http_requests_counter.increment
     end
 
-    after do |_res|
+    after do |res|
+      log_text = log_prefix + "response with status " + res[0].to_s
+      log_text = log_text + ", body: " + res[2][0] unless res[2].nil? || res[2].empty? || res[2][0].to_s == ""
+      logger.info(log_text)
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
     route do |r|
+
+      
+
+      body = nil
+
+      log_text = log_prefix +  r.request_method + ' request to ' + r.path.to_s
+      if r.post?
+        body = JSON.parse(r.body.read)
+        log_text = log_text + ', body: ' + body.to_s
+      end
+      
+      logger.info(log_text)
+
       r.get 'latest' do
         return { 'latest' => latest }.to_json
       end
@@ -37,7 +63,6 @@ module MiniTwit
 
       r.post 'register' do
         error = nil
-        body = JSON.parse(r.body.read)
         username = body['username']
         email = body['email']
         password = body['pwd']
@@ -53,11 +78,13 @@ module MiniTwit
           if !user.nil?
             error = 'The username is already taken'
           else
-            User.new(
+            user = User.new(
               email: email,
               username: username,
               password: BCrypt::Password.create(password)
-            ).save_changes
+            )
+            user.save_changes
+            logger.info(log_prefix + "New user created: " + user.values.to_s)
           end
         end
 
@@ -118,13 +145,15 @@ module MiniTwit
             return filtered_msgs.to_json
           end
           r.post do
-            text = JSON.parse(r.body.read)['content']
-            Message.new(
+            text = body['content']
+            message = Message.new(
               text: text,
               user_id: user.user_id,
               pub_date: Time.now.to_i,
               flagged: false
-            ).save_changes
+            )
+            message.save_changes
+            logger.info(log_prefix + "New message created: " + message.values.to_s)
             response.status = 204
             return nil
           end
@@ -144,7 +173,6 @@ module MiniTwit
           no_followers = no_followers.empty? ? 100 : no_followers.to_i # forgive me
 
           r.post do
-            body = JSON.parse(r.body.read)
             follow_username = body['follow'].to_s
             if follow_username != ''
               follow_user = User.where(username: follow_username).first
@@ -152,10 +180,12 @@ module MiniTwit
                 response.status = 400
                 return 'follow user ' + follow_username + ' does not exist'
               end
-              Follower.new(
+              follower = Follower.new(
                 whom_id: follow_user.user_id,
                 who_id: user.user_id
-              ).save_changes
+              )
+              follower.save_changes
+              logger.info(log_prefix + "New follower created: " + follower.values.to_s)
               response.status = 204
               return nil
             end

@@ -30,6 +30,7 @@ namespace :app do
   end
 
   task :start do
+    Rake::Task['log:create'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['env:generate'].invoke
     Rake::Task['app:server:production'].invoke
@@ -94,5 +95,13 @@ namespace :env do
       sh "sed -i 's/SESSION_KEY=/SESSION_KEY=devops/g' .env"
       sh "sed -i 's/SESSION_RAND=/SESSION_RAND=#{random_string}/g' .env"
     end
+  end
+end
+
+namespace :log do
+  task :create do
+    puts 'Creating APP log …'
+    sh "mkdir /var/www/log" unless File.directory?('/var/www/log')
+    sh "touch /var/www/log/app.log" unless File.exists?('/var/www/log/app.log')  
   end
 end

@@ -33,6 +33,7 @@ GEM
     kwalify (0.7.2)
     launchy (2.4.3)
       addressable (~> 2.3)
+    logger (1.4.2)
     parallel (1.19.1)
     parser (2.7.0.2)
       ast (~> 2.4.0)
@@ -97,6 +98,7 @@ PLATFORMS
 DEPENDENCIES
   bcrypt
   json
+  logger
   prometheus-client
   rake
   roda

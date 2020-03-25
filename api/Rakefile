@@ -20,6 +20,7 @@ namespace :api do
   end
 
   task :start do
+    Rake::Task['log:create'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['api:server:start'].invoke
   end
@@ -42,7 +43,7 @@ namespace :db do
 
   task :create do
     puts 'Creating databases …'
-    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
+    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])    
   end
 
   task :drop do
@@ -52,3 +53,12 @@ namespace :db do
     sh "rm #{databases['production']['database']}"
   end
 end
+
+namespace :log do
+  task :create do
+    puts 'Creating API log …'
+    sh "mkdir /var/www/log" unless File.directory?('/var/www/log')
+    sh "touch /var/www/log/api.log" unless File.exists?('/var/www/log/api.log')  
+  end
+end
+
