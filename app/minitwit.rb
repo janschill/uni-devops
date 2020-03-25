@@ -56,8 +56,6 @@ module MiniTwit
     route do |r|
       r.assets
 
-      body = nil
-
       log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
       log_text += ', body: ' + r.params.to_s if r.post?
       logger.info(log_text)
