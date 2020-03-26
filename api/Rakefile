@@ -43,7 +43,7 @@ namespace :db do
 
   task :create do
     puts 'Creating databases …'
-    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])    
+    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
   end
 
   task :drop do
@@ -61,4 +61,3 @@ namespace :log do
     sh 'touch /var/www/log/api.log' unless File.exist?('/var/www/log/api.log')
   end
 end
-

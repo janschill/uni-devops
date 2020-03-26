@@ -9,7 +9,6 @@ require 'prometheus/client'
 require 'logger'
 require 'securerandom'
 
-
 module MiniTwit
   class SimAPI < Roda
     plugin :hooks
@@ -19,15 +18,13 @@ module MiniTwit
 
     latest = 0
     response_start_time = nil
-    
-
     prometheus = Prometheus::Client.registry
     http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to the api')
     http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time')
 
     log_prefix = nil
 
-    before do |r|
+    before do
       log_prefix = 'log_req_id:' + SecureRandom.hex(10) + ': '
       response_start_time = Time.now
       http_requests_counter.increment
@@ -41,17 +38,13 @@ module MiniTwit
     end
 
     route do |r|
-
-      
-
       body = nil
-
       log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
       if r.post?
         body = JSON.parse(r.body.read)
         log_text += ', body: ' + body.to_s
       end
-      
+
       logger.info(log_text)
 
       r.get 'latest' do
@@ -84,7 +77,7 @@ module MiniTwit
               password: BCrypt::Password.create(password)
             )
             user.save_changes
-            logger.info(log_prefix + "New user created: " + user.values.to_s)
+            logger.info(log_prefix + 'New user created: ' + user.values.to_s)
           end
         end
 
@@ -153,7 +146,7 @@ module MiniTwit
               flagged: false
             )
             message.save_changes
-            logger.info(log_prefix + "New message created: " + message.values.to_s)
+            logger.info(log_prefix + 'New message created: ' + message.values.to_s)
             response.status = 204
             return nil
           end
@@ -185,7 +178,7 @@ module MiniTwit
                 who_id: user.user_id
               )
               follower.save_changes
-              logger.info(log_prefix + "New follower created: " + follower.values.to_s)
+              logger.info(log_prefix + 'New follower created: ' + follower.values.to_s)
               response.status = 204
               return nil
             end
