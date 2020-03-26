@@ -13,7 +13,7 @@ class LoginController < ApplicationController
     error = nil
     if user.nil?
       error = 'Invalid username'
-    elsif !user.password == @request.params['password']
+    elsif user.password != @request.params['password']
       error = 'Invalid password'
     end
 
