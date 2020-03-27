@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './controllers/application_controller'
+require 'bcrypt'
 
 # Handle authentication: login/register
 class LoginController < ApplicationController
@@ -13,10 +14,9 @@ class LoginController < ApplicationController
     error = nil
     if user.nil?
       error = 'Invalid username'
-    elsif user.password != @request.params['password']
+    elsif BCrypt::Password.new(user.password) != @request.params['password']
       error = 'Invalid password'
     end
-
     [error, user]
   end
 end

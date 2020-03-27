@@ -99,9 +99,11 @@ namespace :env do
 end
 
 namespace :log do
+  log_config = YAML.load_file('config/log.yml')
   task :create do
-    puts 'Creating APP log …'
+    puts 'Creating APP logs …'
     sh 'mkdir /var/www/log' unless File.directory?('/var/www/log')
-    sh 'touch /var/www/log/app.log' unless File.exist?('/var/www/log/app.log')
+    sh "touch #{log_config['app']['filepath']}" unless File.exist?(log_config['app']['filepath'])
+    sh "touch #{log_config['access']['filepath']}" unless File.exist?(log_config['access']['filepath'])
   end
 end

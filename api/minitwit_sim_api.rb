@@ -7,13 +7,14 @@ require 'json'
 require 'cgi'
 require 'prometheus/client'
 require 'logger'
-require 'securerandom'
+require 'yaml'
 
 module MiniTwit
   class SimAPI < Roda
     plugin :hooks
 
-    logger = Logger.new('/var/www/log/api.log', 10, 1_024_000)
+    log_config = YAML.load_file('config/log.yml')
+    logger = Logger.new(log_config['api']['filepath'], 10, 1_024_000)
     logger.info('Initializing API')
 
     latest = 0
@@ -22,197 +23,199 @@ module MiniTwit
     http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to the api')
     http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time')
 
-    log_prefix = nil
-
     before do
-      log_prefix = 'log_req_id:' + SecureRandom.hex(10) + ': '
       response_start_time = Time.now
       http_requests_counter.increment
     end
 
-    after do |res|
-      log_text = log_prefix + 'response with status ' + res[0].to_s
-      log_text += ', body: ' + res[2][0] unless res[2].nil? || res[2].empty? || res[2][0].to_s == ''
-      logger.info(log_text)
+    after do
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
     route do |r|
       body = nil
-      log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
-      if r.post?
-        body = JSON.parse(r.body.read)
-        log_text += ', body: ' + body.to_s
-      end
 
-      logger.info(log_text)
+      begin
+        r.get 'latest' do
+          return { 'latest' => latest }.to_json
+        end
 
-      r.get 'latest' do
-        return { 'latest' => latest }.to_json
-      end
+        body = JSON.parse(r.body.read) if r.post?
 
-      try_latest = r.params['latest'].to_s
-      latest = try_latest.to_i if try_latest != ''
+        try_latest = r.params['latest'].to_s
+        latest = try_latest.to_i if try_latest != ''
 
-      r.post 'register' do
-        error = nil
-        username = body['username']
-        email = body['email']
-        password = body['pwd']
+        r.post 'register' do
+          error = nil
+          username = body['username']
+          email = body['email']
+          password = body['pwd']
 
-        if username.nil?
-          error = 'You have to enter a username'
-        elsif email.nil? || !email.include?('@')
-          error = 'You have to enter a valid email address'
-        elsif password.nil?
-          error = 'You have to enter a password'
-        else
-          user = User.where(username: username).first
-          if !user.nil?
-            error = 'The username is already taken'
+          if username.nil?
+            error = 'You have to enter a username'
+          elsif email.nil? || !email.include?('@')
+            error = 'You have to enter a valid email address'
+          elsif password.nil?
+            error = 'You have to enter a password'
           else
-            user = User.new(
-              email: email,
-              username: username,
-              password: BCrypt::Password.create(password)
-            )
-            user.save_changes
-            logger.info(log_prefix + 'New user created: ' + user.values.to_s)
-          end
-        end
-
-        if !error.nil?
-          response.status = 400
-          return error
-        else
-          response.status = 204
-          return nil
-        end
-      end
-
-      # check if request originated from the simulator (does not work for the test)
-
-      authorization_code = r.env['HTTP_AUTHORIZATION']
-      if authorization_code != 'Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh'
-        response.status = 403
-        return 'You are not authorized to use this resource!'
-      end
-
-      r.on 'msgs' do
-        r.is do
-          r.get do
-            no_msgs = r.params['no'].to_s
-            no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i # forgive me
-            msgs = DB.fetch('SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 ORDER BY m.pub_date DESC LIMIT ?;', no_msgs)
-            filtered_msgs = []
-            msgs.each do |msg|
-              filtered_msg = {}
-              filtered_msg['content'] = msg[:text]
-              filtered_msg['pub_date'] = msg[:pub_date]
-              filtered_msg['user'] = msg[:username]
-              filtered_msgs.append(filtered_msg)
+            user = User.where(username: username).first
+            if !user.nil?
+              error = 'The username is already taken'
+            else
+              user = User.new(
+                email: email,
+                username: username,
+                password: BCrypt::Password.create(password)
+              )
+              user.save_changes
+              logger.info('New user created: ' + user.values.to_s)
             end
-            return filtered_msgs.to_json
           end
-        end
 
-        r.is String do |username|
-          username = CGI.unescape(username)
-          user = User.where(username: username).first
-          if user.nil?
+          if !error.nil?
             response.status = 400
-            return 'No user with name ' + username
-          end
-          r.get do
-            no_msgs = r.params['no'].to_s
-            no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i # forgive me
-            msgs = DB.fetch('SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 AND u.user_id = ? ORDER BY m.pub_date DESC LIMIT ?;', user.user_id, no_msgs)
-            filtered_msgs = []
-            msgs.each do |msg|
-              filtered_msg = {}
-              filtered_msg['content'] = msg[:text]
-              filtered_msg['pub_date'] = msg[:pub_date]
-              filtered_msg['user'] = msg[:username]
-              filtered_msgs.append(filtered_msg)
-            end
-            return filtered_msgs.to_json
-          end
-          r.post do
-            text = body['content']
-            message = Message.new(
-              text: text,
-              user_id: user.user_id,
-              pub_date: Time.now.to_i,
-              flagged: false
-            )
-            message.save_changes
-            logger.info(log_prefix + 'New message created: ' + message.values.to_s)
+            return error
+          else
             response.status = 204
             return nil
           end
         end
-      end
 
-      r.on 'fllws' do
-        r.is String do |username|
-          username = CGI.unescape(username)
-          user = User.where(username: username).first
-          if user.nil?
-            response.status = 400
-            return 'No user with name ' + username
+        # check if request originated from the simulator (does not work for the test)
+
+        authorization_code = r.env['HTTP_AUTHORIZATION']
+        if authorization_code != 'Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh'
+          response.status = 403
+          return 'You are not authorized to use this resource!'
+        end
+
+        r.on 'msgs' do
+          r.is do
+            r.get do
+              no_msgs = r.params['no'].to_s
+              no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i # forgive me
+              msgs = DB.fetch('SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 ORDER BY m.pub_date DESC LIMIT ?;', no_msgs)
+              filtered_msgs = []
+              msgs.each do |msg|
+                filtered_msg = {}
+                filtered_msg['content'] = msg[:text]
+                filtered_msg['pub_date'] = msg[:pub_date]
+                filtered_msg['user'] = msg[:username]
+                filtered_msgs.append(filtered_msg)
+              end
+              return filtered_msgs.to_json
+            end
           end
 
-          no_followers = r.params['no'].to_s
-          no_followers = no_followers.empty? ? 100 : no_followers.to_i # forgive me
-
-          r.post do
-            follow_username = body['follow'].to_s
-            if follow_username != ''
-              follow_user = User.where(username: follow_username).first
-              if follow_user.nil?
-                response.status = 400
-                return 'follow user ' + follow_username + ' does not exist'
+          r.is String do |username|
+            username = CGI.unescape(username)
+            user = User.where(username: username).first
+            if user.nil?
+              response.status = 400
+              return 'No user with name ' + username
+            end
+            r.get do
+              no_msgs = r.params['no'].to_s
+              no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i # forgive me
+              msgs = DB.fetch('SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 AND u.user_id = ? ORDER BY m.pub_date DESC LIMIT ?;', user.user_id, no_msgs)
+              filtered_msgs = []
+              msgs.each do |msg|
+                filtered_msg = {}
+                filtered_msg['content'] = msg[:text]
+                filtered_msg['pub_date'] = msg[:pub_date]
+                filtered_msg['user'] = msg[:username]
+                filtered_msgs.append(filtered_msg)
               end
-              follower = Follower.new(
-                whom_id: follow_user.user_id,
-                who_id: user.user_id
+              return filtered_msgs.to_json
+            end
+            r.post do
+              text = body['content']
+              message = Message.new(
+                text: text,
+                user_id: user.user_id,
+                pub_date: Time.now.to_i,
+                flagged: false
               )
-              follower.save_changes
-              logger.info(log_prefix + 'New follower created: ' + follower.values.to_s)
+              message.save_changes
+              logger.info('New message created: ' + message.values.to_s)
+              response.status = 204
+              return nil
+            end
+          end
+        end
+
+        r.on 'fllws' do
+          r.is String do |username|
+            username = CGI.unescape(username)
+            user = User.where(username: username).first
+            if user.nil?
+              response.status = 400
+              return 'No user with name ' + username
+            end
+
+            no_followers = r.params['no'].to_s
+            no_followers = no_followers.empty? ? 100 : no_followers.to_i # forgive me
+
+            r.post do
+              follow_username = body['follow'].to_s
+              if follow_username != ''
+                follow_user = User.where(username: follow_username).first
+                if follow_user.nil?
+                  response.status = 400
+                  return 'follow user ' + follow_username + ' does not exist'
+                end
+                follower = Follower.new(
+                  whom_id: follow_user.user_id,
+                  who_id: user.user_id
+                )
+                follower.save_changes
+                logger.info('New follower created: ' + follower.values.to_s)
+                response.status = 204
+                return nil
+              end
+
+              unfollow_username = body['unfollow'].to_s
+              if unfollow_username != ''
+                unfollow_user = User.where(username: unfollow_username).first
+                if unfollow_user.nil?
+                  response.status = 400
+                  return 'unfollow user ' + unfollow_username + ' does not exist'
+                end
+              end
+              Follower.where(
+                whom_id: unfollow_user.user_id,
+                who_id: user.user_id
+              ).delete
               response.status = 204
               return nil
             end
 
-            unfollow_username = body['unfollow'].to_s
-            if unfollow_username != ''
-              unfollow_user = User.where(username: unfollow_username).first
-              if unfollow_user.nil?
-                response.status = 400
-                return 'unfollow user ' + unfollow_username + ' does not exist'
+            r.get do
+              followers = DB.fetch("SELECT users.username FROM users
+                              INNER JOIN followers ON followers.whom_id = users.user_id
+                              WHERE followers.who_id=?
+                              LIMIT ?", user.user_id, no_followers)
+
+              follower_names = []
+              followers.each do |follower|
+                follower_names.append(follower[:username])
               end
+
+              return { 'follows' => follower_names }.to_json
             end
-            Follower.where(
-              whom_id: unfollow_user.user_id,
-              who_id: user.user_id
-            ).delete
-            response.status = 204
-            return nil
-          end
-
-          r.get do
-            followers = DB.fetch("SELECT users.username FROM users
-                            INNER JOIN followers ON followers.whom_id = users.user_id
-                            WHERE followers.who_id=?
-                            LIMIT ?", user.user_id, no_followers)
-
-            follower_names = []
-            followers.each do |follower|
-              follower_names.append(follower[:username])
-            end
-
-            return { 'follows' => follower_names }.to_json
           end
         end
+      rescue Error => e
+        msg = 'Exception raised by request ' + r.request_method.to_s + ' ' + r.path.to_s
+        if r.post?
+          body['password'] = '_REDACTED_' unless body['password'].nil?
+          msg += ' ' + body.to_s
+        end
+        msg += ':'
+        logger.error(msg.gsub(/[\r\n]/, ' '))
+        logger.error(e.message.gsub(/[\r\n]/, ' '))
+        logger.error(e.backtrace.join(', ').gsub(/[\r\n]/, ' '))
+        raise e # let rack handle the exception
       end
     end
   end

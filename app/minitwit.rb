@@ -9,7 +9,7 @@ require './controllers/message_controller'
 require 'prometheus/client'
 require 'usagewatch_ext'
 require 'logger'
-require 'securerandom'
+require 'yaml'
 
 module MiniTwit
   # Main class for the application routing
@@ -21,7 +21,8 @@ module MiniTwit
            key: ENV['SESSION_KEY'],
            secret: ENV['SESSION_RAND']
 
-    logger = Logger.new('/var/www/log/app.log', 10, 1_024_000)
+    log_config = YAML.load_file('config/log.yml')
+    logger = Logger.new(log_config['app']['filepath'], 10, 1_024_000)
     logger.info('Initializing APP')
 
     usw = Usagewatch
@@ -34,145 +35,153 @@ module MiniTwit
     user = nil
     response_start_time = nil
 
-    log_prefix = nil
-
     before do
-      log_prefix = 'log_req_id:' + SecureRandom.hex(10)
       response_start_time = Time.now
       user = nil
       user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
-      log_prefix += ';user_id:' + session['user_id'].to_s unless session['user_id'].nil?
-      log_prefix += + ': '
       http_requests_counter.increment
       cpu_load_gauge.set(usw.uw_cpuused)
     end
 
-    after do |res|
-      log_text = log_prefix + 'response with status ' + res[0].to_s
-      logger.info(log_text)
+    after do
       http_response_duration_histogram.observe(Time.now - response_start_time)
     end
 
     route do |r|
       r.assets
 
-      log_text = log_prefix + r.request_method + ' request to ' + r.path.to_s
-      log_text += ', body: ' + r.params.to_s if r.post?
-      logger.info(log_text)
+      begin
+        @error = nil
 
-      @error = nil
-
-      r.root do
-        r.redirect('public') if user.nil?
-        @options = {
-          'page_title' => 'My timeline',
-          'request_endpoint' => 'timeline'
-        }
-        @offset = check_offset(r.params['offset'])
-        @messages = Message.messages_by_user_id_and_followers(user.user_id)
-        @user = user
-        view('timeline')
-      end
-
-      r.get 'public' do
-        @options = {
-          'page_title' => 'Public timeline'
-        }
-        @user = user
-        @offset = check_offset(r.params['offset'])
-        @messages = Message.latest_messages(@offset)
-        view('timeline')
-      end
-
-      # TODO: use 403 for redirect
-      r.post 'add_message' do
-        r.redirect('/') if session['user_id'].nil?
-        message_controller = MessageController.new(r, user)
-        message_controller.add_message
-        r.redirect('/')
-      end
-
-      r.on 'login' do
-        @options = { 'page_title' => 'Login' }
-
-        r.get do
-          request.redirect('/') unless user.nil?
-          view('login')
-        end
-
-        r.post do
-          login_controller = LoginController.new(r)
-          error, user = login_controller.attempt_login_user
-          if error.nil?
-            session[:user_id] = user.user_id
-            r.redirect('/')
-          else
-            @error = error
-            view('login')
-          end
-        end
-      end
-
-      r.on 'register' do
-        register_controller = RegisterController.new(r)
-        @options = { 'page_title' => 'Register' }
-
-        r.get do
-          request.redirect('/') unless user.nil?
-          view('register')
-        end
-
-        r.post do
-          error, user = register_controller.register_user
-          if error.nil? && user.nil?
-            r.redirect('/')
-          elsif user.nil?
-            @error = error
-            view('register')
-          else
-            session[:user_id] = user.user_id
-            r.redirect('/')
-          end
-        end
-      end
-
-      r.get 'logout' do
-        session.clear
-        r.redirect('/')
-      end
-
-      r.on 'user' do
-        r.on :target_user_id do |target_user_id|
-          user_controller = UserController.new(user, target_user_id)
-          r.redirect('/') if user_controller.target_user.nil?
-
-          r.on 'follow' do
-            if user_controller.attempt_follow
-              r.redirect("/user/#{user_controller.target_user.user_id}")
-            else
-              r.redirect('/')
-            end
-          end
-
-          r.on 'unfollow' do
-            if user_controller.attempt_unfollow
-              r.redirect("/user/#{user_controller.target_user.user_id}")
-            else
-              r.redirect('/')
-            end
-          end
-
+        r.root do
+          r.redirect('public') if user.nil?
           @options = {
-            'page_title' => "#{user_controller.target_user.username}'s timeline",
-            'request_endpoint' => 'user_timeline'
+            'page_title' => 'My timeline',
+            'request_endpoint' => 'timeline'
           }
-
+          @offset = check_offset(r.params['offset'])
+          @messages = Message.messages_by_user_id_and_followers(user.user_id)
           @user = user
-          @target_user = user_controller.target_user
-          @is_follower = user_controller.check_if_following_target_user
-          @messages = user_controller.messages_from_target_user
           view('timeline')
         end
+
+        r.get 'public' do
+          @options = {
+            'page_title' => 'Public timeline'
+          }
+          @user = user
+          @offset = check_offset(r.params['offset'])
+          @messages = Message.latest_messages(@offset)
+          view('timeline')
+        end
+
+        r.post 'add_message' do
+          r.redirect('/') if session['user_id'].nil?
+          message_controller = MessageController.new(r, user)
+          message = message_controller.add_message
+          logger.info('User ' + session['user_id'].to_s + ' posted Message ' + message.message_id.to_s) unless message.nil?
+          r.redirect('/')
+        end
+
+        r.on 'login' do
+          @options = { 'page_title' => 'Login' }
+
+          r.get do
+            request.redirect('/') unless user.nil?
+            view('login')
+          end
+
+          r.post do
+            login_controller = LoginController.new(r)
+            error, user = login_controller.attempt_login_user
+            if error.nil?
+              logger.info('User ' + user.user_id.to_s + ' logged in')
+              session['user_id'] = user.user_id
+              r.redirect('/')
+            else
+              @error = error
+              view('login')
+            end
+          end
+        end
+
+        r.on 'register' do
+          register_controller = RegisterController.new(r)
+          @options = { 'page_title' => 'Register' }
+
+          r.get do
+            request.redirect('/') unless user.nil?
+            view('register')
+          end
+
+          r.post do
+            error, user = register_controller.register_user
+            if error.nil? && user.nil?
+              r.redirect('/')
+            elsif user.nil?
+              @error = error
+              view('register')
+            else
+              logger.info('New user with id ' + user.user_id.to_s + ' registered')
+              session['user_id'] = user.user_id
+              r.redirect('/')
+            end
+          end
+        end
+
+        r.get 'logout' do
+          logger.info('User ' + session['user_id'].to_s + ' logged out')
+          session.clear
+          r.redirect('/')
+        end
+
+        r.on 'user' do
+          r.on Integer do |target_user_id|
+            user_controller = UserController.new(user, target_user_id)
+            r.redirect('/') if user_controller.target_user.nil?
+
+            r.on 'follow' do
+              if user_controller.attempt_follow
+                logger.info('User ' + session['user_id'].to_s + ' started following User ' + target_user_id.to_s)
+                r.redirect("/user/#{user_controller.target_user.user_id}")
+              else
+                r.redirect('/')
+              end
+            end
+
+            r.on 'unfollow' do
+              if user_controller.attempt_unfollow
+                logger.info('User ' + session['user_id'].to_s + ' unfollowed User ' + target_user_id.to_s)
+                r.redirect("/user/#{user_controller.target_user.user_id}")
+              else
+                r.redirect('/')
+              end
+            end
+
+            @options = {
+              'page_title' => "#{user_controller.target_user.username}'s timeline",
+              'request_endpoint' => 'user_timeline'
+            }
+
+            @offset = check_offset(r.params['offset'])
+            @user = user
+            @target_user = user_controller.target_user
+            @is_follower = user_controller.check_if_following_target_user
+            @messages = user_controller.messages_from_target_user(@offset)
+            view('timeline')
+          end
+        end
+      rescue Error => e
+        msg = 'Exception raised by request ' + r.request_method.to_s + ' ' + r.path.to_s
+        if r.post?
+          r.params['password'] = '_REDACTED_' unless r.params['password'].nil?
+          msg += ' ' + r.params.to_s
+        end
+        msg += ':'
+        logger.error(msg.gsub(/[\r\n]/, ' '))
+        logger.error(e.message.gsub(/[\r\n]/, ' '))
+        logger.error(e.backtrace.join(', ') .gsub(/[\r\n]/, ' '))
+        raise e # let rack handle the exception
       end
     end
 

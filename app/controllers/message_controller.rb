@@ -13,14 +13,16 @@ class MessageController < ApplicationController
 
   def add_message
     text = request.params['text']
+    message = nil
     if text != ''
-      Message.new(
+      message = Message.new(
         text: text,
         user_id: @logged_in_user.user_id,
         pub_date: Time.now.to_i,
         flagged: false
-      ).save_changes
+      )
+      message.save_changes
     end
-    nil
+    message
   end
 end

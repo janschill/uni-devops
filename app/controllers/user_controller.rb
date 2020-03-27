@@ -44,7 +44,7 @@ class UserController < ApplicationController
     is_follower
   end
 
-  def messages_from_target_user
-    Message.messages_by_user_id(@target_user.user_id)
+  def messages_from_target_user(offset)
+    Message.messages_by_user_id(@target_user.user_id, offset)
   end
 end
