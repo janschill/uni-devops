@@ -9,7 +9,7 @@ namespace :app do
       ENV['APP_ENVIRONMENT'] ||= 'development'
       sh 'rackup -D -P server.pid -o 0.0.0.0'
       sleep(0.2)
-      pid = File.read('server.pid')
+      pid = File.read('server.pid').to_i
       puts "Server running on PID: #{pid}"
     end
 
@@ -18,7 +18,7 @@ namespace :app do
       ENV['APP_ENVIRONMENT'] ||= 'production'
       sh 'rackup -D -P server.pid  -o 0.0.0.0 -E PRODUCTION -p 80'
       sleep(0.2)
-      pid = File.read('server.pid')
+      pid = File.read('server.pid').to_i
       puts "Server running on PID: #{pid}"
     end
 
@@ -71,9 +71,9 @@ namespace :db do
 
   task :drop do
     puts 'Dropping databases …'
-    sh "rm #{databases['development']['database']}"
-    sh "rm #{databases['test']['database']}"
-    sh "rm #{databases['production']['database']}"
+    File.delete((databases['development']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
+    File.delete((databases['test']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
+    File.delete((databases['production']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
   end
 
   task :inspect do
@@ -88,11 +88,13 @@ namespace :env do
       puts '.env file already exists.'
     else
       puts 'Generating .env file …'
-      sh 'cp .env.sample .env'
+      FileUtils.cp('.env.sample', '.env')
       require 'securerandom'
       random_string = SecureRandom.alphanumeric(64)
-      sh "sed -i 's/SESSION_KEY=/SESSION_KEY=devops/g' .env"
-      sh "sed -i 's/SESSION_RAND=/SESSION_RAND=#{random_string}/g' .env"
+      file_content = File.read('.env')
+      file_updated = file_content.gsub(/SESSION_KEY=/, 'SESSION_KEY=devops')
+      file_updated = file_updated.gsub(/SESSION_RAND=/, "SESSION_RAND=#{random_string}")
+      File.open('.env', 'w') { |file| file.puts file_updated }
     end
   end
 end
