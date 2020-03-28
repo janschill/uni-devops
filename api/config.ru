@@ -9,9 +9,9 @@ require 'logger'
 logger = Logger.new(log_config['access']['filepath'])
 use Rack::CommonLogger, logger
 
-require 'prometheus/middleware/collector'
+# require 'prometheus/middleware/collector'
 require 'prometheus/middleware/exporter'
-use Prometheus::Middleware::Collector
+# use Prometheus::Middleware::Collector # left for debugging purposes
 use Prometheus::Middleware::Exporter
 
 run MiniTwit::SimAPI.freeze.app
