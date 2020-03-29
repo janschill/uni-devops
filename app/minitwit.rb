@@ -22,23 +22,25 @@ module MiniTwit
     usw = Usagewatch
 
     prometheus = Prometheus::Client.registry
-    http_requests_counter = prometheus.counter(:minitwit_app_http_requests, docstring: 'A counter of HTTP requests made to the app')
+    http_requests_counter = prometheus.counter(:minitwit_app_http_requests, docstring: 'A counter of HTTP requests made to enpoints of the app', labels: %i[method endpoint])
     cpu_load_gauge = prometheus.gauge(:minitwit_app_cpu_load, docstring: 'A gauge of CPU load')
-    http_response_duration_histogram = prometheus.histogram(:minitwit_app_http_response_duration, docstring: 'A histogram tracking http response time')
+    http_response_duration_histogram = prometheus.histogram(:minitwit_app_http_response_duration, docstring: 'A histogram tracking http response time', labels: %i[method endpoint])
 
     user = nil
     response_start_time = nil
+    request_labels = nil
 
     before do
       response_start_time = Time.now
-      user = nil
       user = User.where(user_id: session['user_id']).first unless session['user_id'].nil?
-      http_requests_counter.increment
       cpu_load_gauge.set(usw.uw_cpuused)
     end
 
-    after do |_res|
-      http_response_duration_histogram.observe(Time.now - response_start_time)
+    after do
+      unless request_labels.nil?
+        http_requests_counter.increment(labels: request_labels)
+        http_response_duration_histogram.observe(Time.now - response_start_time, labels: request_labels)
+      end
     end
 
     route do |r|
@@ -47,6 +49,7 @@ module MiniTwit
       @error = nil
 
       r.root do
+        request_labels = { endpoint: r.path, method: r.request_method }
         r.redirect('public') if user.nil?
         @options = {
           'page_title' => 'My timeline',
@@ -59,6 +62,7 @@ module MiniTwit
       end
 
       r.get 'public' do
+        request_labels = { endpoint: r.path, method: r.request_method }
         @options = {
           'page_title' => 'Public timeline'
         }
@@ -70,6 +74,7 @@ module MiniTwit
 
       # TODO: use 403 for redirect
       r.post 'add_message' do
+        request_labels = { endpoint: r.path, method: r.request_method }
         r.redirect('/') if session['user_id'].nil?
         message_controller = MessageController.new(r, user)
         message_controller.add_message
@@ -77,6 +82,7 @@ module MiniTwit
       end
 
       r.on 'login' do
+        request_labels = { endpoint: r.path, method: r.request_method }
         @options = { 'page_title' => 'Login' }
 
         r.get do
@@ -98,6 +104,7 @@ module MiniTwit
       end
 
       r.on 'register' do
+        request_labels = { endpoint: r.path, method: r.request_method }
         register_controller = RegisterController.new(r)
         @options = { 'page_title' => 'Register' }
 
@@ -121,12 +128,14 @@ module MiniTwit
       end
 
       r.get 'logout' do
+        request_labels = { endpoint: r.path, method: r.request_method }
         session.clear
         r.redirect('/')
       end
 
       r.on 'user' do
         r.on :target_user_id do |target_user_id|
+          request_labels = { endpoint: '/user/:target_user_id' + r.remaining_path, method: r.request_method }
           user_controller = UserController.new(user, target_user_id)
           r.redirect('/') if user_controller.target_user.nil?
 
@@ -151,10 +160,11 @@ module MiniTwit
             'request_endpoint' => 'user_timeline'
           }
 
+          @offset = check_offset(r.params['offset'])
           @user = user
           @target_user = user_controller.target_user
           @is_follower = user_controller.check_if_following_target_user
-          @messages = user_controller.messages_from_target_user
+          @messages = user_controller.messages_from_target_user(@offset)
           view('timeline')
         end
       end
