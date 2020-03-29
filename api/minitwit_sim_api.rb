@@ -57,7 +57,6 @@ module MiniTwit
           username = body['username']
           email = body['email']
           password = body['pwd']
-
           if username.nil?
             error = 'You have to enter a username'
           elsif email.nil? || !email.include?('@')
@@ -78,7 +77,7 @@ module MiniTwit
               logger.info('New user created: ' + user.values.to_s)
             end
           end
-
+          
           if !error.nil?
             response.status = 400
             return error

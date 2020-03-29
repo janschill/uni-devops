@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+require 'bundler/gem_tasks'
+require 'rake/testtask'
+require 'stalker'
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'test'
+  t.libs << 'lib'
+  t.test_files = FileList['test/**/*_test.rb']
+end
+
+namespace :stalker do
+  pid = ''
+
+  task :start, [:interval] do |_t, args|
+    if args[:interval].nil?
+      puts 'Please specify interval in seconds used to hit the targets.'
+    elsif args[:interval].to_i < 1
+      puts 'Please specify an interval that is larger than one'
+    else
+      pid = Process.pid
+      puts "Running Stalker on PID: #{pid}"
+      loop do
+        Stalker::Stalker.stalk
+        sleep(args[:interval].to_i)
+      end
+    end
+  end
+
+  task :stop do
+    if pid == ''
+      puts 'Nothing to kill'
+    else
+      Process.kill(9, pid)
+    end
+  end
+end
