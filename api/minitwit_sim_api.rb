@@ -77,7 +77,6 @@ module MiniTwit
               logger.info('New user created: ' + user.values.to_s)
             end
           end
-          
           if !error.nil?
             response.status = 400
             return error
