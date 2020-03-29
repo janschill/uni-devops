@@ -20,6 +20,7 @@ services:
     container_name: devops_minitwit_app
     volumes:
       - /root/db:/var/www/db
+      - /root/log:/var/www/log
     networks:
       - main
     depends_on:
@@ -34,6 +35,7 @@ services:
     container_name: devops_minitwit_api
     volumes:
       - /root/db:/var/www/db
+      - /root/log:/var/www/log
     ports:
       - "1337:1337"
     networks:
