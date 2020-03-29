@@ -19,17 +19,22 @@ module MiniTwit
 
     latest = 0
     response_start_time = nil
+
     prometheus = Prometheus::Client.registry
-    http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to the api')
-    http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time')
+    http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to enpoints of the api', labels: %i[method endpoint])
+    http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time', labels: %i[method endpoint])
+
+    request_labels = nil
 
     before do
       response_start_time = Time.now
-      http_requests_counter.increment
     end
 
     after do
-      http_response_duration_histogram.observe(Time.now - response_start_time)
+      unless request_labels.nil?
+        http_requests_counter.increment(labels: request_labels)
+        http_response_duration_histogram.observe(Time.now - response_start_time, labels: request_labels)
+      end
     end
 
     route do |r|
@@ -37,6 +42,7 @@ module MiniTwit
 
       begin
         r.get 'latest' do
+          request_labels = { endpoint: r.path, method: r.request_method }
           return { 'latest' => latest }.to_json
         end
 
@@ -46,6 +52,7 @@ module MiniTwit
         latest = try_latest.to_i if try_latest != ''
 
         r.post 'register' do
+          request_labels = { endpoint: r.path, method: r.request_method }
           error = nil
           username = body['username']
           email = body['email']
@@ -92,6 +99,7 @@ module MiniTwit
         r.on 'msgs' do
           r.is do
             r.get do
+              request_labels = { endpoint: r.path, method: r.request_method }
               no_msgs = r.params['no'].to_s
               no_msgs = no_msgs.empty? ? 100 : no_msgs.to_i # forgive me
               msgs = DB.fetch('SELECT * FROM messages m inner join users u ON m.user_id = u.user_id WHERE m.flagged = 0 ORDER BY m.pub_date DESC LIMIT ?;', no_msgs)
@@ -108,6 +116,7 @@ module MiniTwit
           end
 
           r.is String do |username|
+            request_labels = { endpoint: '/msgs/:username' + r.remaining_path, method: r.request_method }
             username = CGI.unescape(username)
             user = User.where(username: username).first
             if user.nil?
@@ -146,6 +155,7 @@ module MiniTwit
 
         r.on 'fllws' do
           r.is String do |username|
+            request_labels = { endpoint: '/fllws/:username' + r.remaining_path, method: r.request_method }
             username = CGI.unescape(username)
             user = User.where(username: username).first
             if user.nil?
