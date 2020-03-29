@@ -69,3 +69,11 @@ services:
       - "3000:3000"
     networks:
       - main
+
+  stalker:
+    image: freakency/devops_minitwit_stalker
+    container_name: devops_minitwit_stalker
+    volumes:
+      - /root/log:/var/www/stalker/log
+    networks:
+      - main

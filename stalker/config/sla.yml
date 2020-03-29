@@ -1,0 +1,5 @@
+groupb:
+  uptime: 98.3
+  response_time: 500
+  recover_time: 4
+  errors: 10
