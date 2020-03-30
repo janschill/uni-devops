@@ -10,7 +10,7 @@ eval "$(ssh-agent -s)"
 chmod 600 ./deploy_key
 echo -e "Host $SERVER_IP_ADDRESS\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 ssh-add ./deploy_key
-ssh -i ./deploy_key -o "StrictHostKeyChecking no" root@janschill.de "docker-compose -f /root/minitwit/docker-compose.yml down && docker-compose -f /root/minitwit/docker-compose.yml up -d"
+ssh -i ./deploy_key -o "StrictHostKeyChecking no" root@janschill.de "docker-compose -f /root/minitwit/docker-compose.yml pull && docker-compose -f /root/minitwit/docker-compose.yml down && docker-compose -f /root/minitwit/docker-compose.yml up -d"
 
 
 # Keeping this line here for debug purpose
