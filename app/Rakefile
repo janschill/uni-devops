@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'fileutils'
 
 namespace :app do
   namespace :server do
@@ -104,8 +105,11 @@ namespace :log do
   log_config = YAML.load_file('config/log.yml')
   task :create do
     puts 'Creating APP logs …'
-    sh 'mkdir /var/www/log' unless File.directory?('/var/www/log')
-    sh "touch #{log_config['app']['filepath']}" unless File.exist?(log_config['app']['filepath'])
-    sh "touch #{log_config['access']['filepath']}" unless File.exist?(log_config['access']['filepath'])
+    app_log_dirname = File.dirname(log_config['app']['filepath'])
+    FileUtils.mkdir_p(app_log_dirname) unless File.directory?(app_log_dirname)
+    File.new(log_config['app']['filepath'], 'w') unless File.exist?(log_config['app']['filepath'])
+    access_log_dirname = File.dirname(log_config['access']['filepath'])
+    FileUtils.mkdir_p(access_log_dirname) unless File.directory?(access_log_dirname)
+    File.new(log_config['access']['filepath'], 'w') unless File.exist?(log_config['access']['filepath'])
   end
 end
