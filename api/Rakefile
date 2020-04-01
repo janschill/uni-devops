@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'fileutils'
 
 namespace :api do
   namespace :server do
@@ -20,6 +21,7 @@ namespace :api do
   end
 
   task :start do
+    Rake::Task['log:create'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['api:server:start'].invoke
   end
@@ -50,5 +52,18 @@ namespace :db do
     sh "rm #{databases['development']['database']}"
     sh "rm #{databases['test']['database']}"
     sh "rm #{databases['production']['database']}"
+  end
+end
+
+namespace :log do
+  log_config = YAML.load_file('config/log.yml')
+  task :create do
+    puts 'Creating API logs …'
+    api_log_dirname = File.dirname(log_config['api']['filepath'])
+    FileUtils.mkdir_p(api_log_dirname) unless File.directory?(api_log_dirname)
+    File.new(log_config['api']['filepath'], 'w') unless File.exist?(log_config['api']['filepath'])
+    access_log_dirname = File.dirname(log_config['access']['filepath'])
+    FileUtils.mkdir_p(access_log_dirname) unless File.directory?(access_log_dirname)
+    File.new(log_config['access']['filepath'], 'w') unless File.exist?(log_config['access']['filepath'])
   end
 end

@@ -1,2 +1,4 @@
 access:
   filepath: /var/www/log/access.log
+api:
+  filepath: /var/www/log/api.log
