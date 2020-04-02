@@ -18,15 +18,5 @@ jobs:
         PORT: 22
         KEY: ${{ secrets.SERVER_SSH_KEY }}
       with:
-        source: "docker-compose.yml"
-        target: "/root/minitwit"
-    - name: Copy prometheus.yml via scp
-      uses: appleboy/scp-action@master
-      env:
-        HOST: ${{ secrets.REMOTE_HOST }}
-        USERNAME: "root"
-        PORT: 22
-        KEY: ${{ secrets.SERVER_SSH_KEY }}
-      with:
-        source: "prometheus.yml"
+        source: "docker-compose.yml,prometheus.yml,logging_elk/"
         target: "/root/minitwit"
