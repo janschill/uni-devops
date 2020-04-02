@@ -10,10 +10,14 @@ module Stalker
     def self.stalk
       sites = YAML.load_file('config/sites.yml')
       sites['uris'].each do |site|
-        connector = Connector.new(site['address'], site['protocol'], site['port'], site['path'])
-        connector.request
         writer = Writer.new(site)
-        writer.write(connector, site)
+        begin
+          connector = Connector.new(site['address'], site['protocol'], site['port'], site['path'])
+          connector.request
+          writer.write_conncetion(connector, site)
+        rescue StandardError => e
+          writer.write(e)
+        end
       end
     end
   end
