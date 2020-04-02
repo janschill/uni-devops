@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'fileutils'
 
 namespace :app do
   namespace :server do
@@ -30,6 +31,7 @@ namespace :app do
   end
 
   task :start do
+    Rake::Task['log:create'].invoke
     Rake::Task['db:create'].invoke
     Rake::Task['env:generate'].invoke
     Rake::Task['app:server:production'].invoke
@@ -96,5 +98,18 @@ namespace :env do
       file_updated = file_updated.gsub(/SESSION_RAND=/, "SESSION_RAND=#{random_string}")
       File.open('.env', 'w') { |file| file.puts file_updated }
     end
+  end
+end
+
+namespace :log do
+  log_config = YAML.load_file('config/log.yml')
+  task :create do
+    puts 'Creating APP logs …'
+    app_log_dirname = File.dirname(log_config['app']['filepath'])
+    FileUtils.mkdir_p(app_log_dirname) unless File.directory?(app_log_dirname)
+    File.new(log_config['app']['filepath'], 'w') unless File.exist?(log_config['app']['filepath'])
+    access_log_dirname = File.dirname(log_config['access']['filepath'])
+    FileUtils.mkdir_p(access_log_dirname) unless File.directory?(access_log_dirname)
+    File.new(log_config['access']['filepath'], 'w') unless File.exist?(log_config['access']['filepath'])
   end
 end

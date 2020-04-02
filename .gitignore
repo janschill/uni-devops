@@ -2,6 +2,7 @@
 .DS_Store
 .vscode
 *.db
+*.log
 !grafana.db
 .bundle/
 deploy_key

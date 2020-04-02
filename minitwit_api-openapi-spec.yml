@@ -1,0 +1,171 @@
+swagger: "2.0"
+info:
+  description: "DevOps university project: MiniTwit, which is a small Twitter clone."
+  version: "1.0.0"
+  title: "MiniTwit"
+  termsOfService: ""
+  license:
+    name: "MIT License"
+    url: "https://opensource.org/licenses/MIT"
+host: "minitwit-api.janschill.de"
+tags:
+- name: "message"
+  description: "All message related endpoints"
+- name: "user"
+  description: "All user related endpoints"
+schemes:
+- "http"
+paths:
+  /latest:
+    get:
+      tags: 
+      - "message"
+      summary: "Retrieve latest message ID"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            type: "integer"
+            example: 23545
+  /register:
+    post:
+      tags: 
+      - "user"
+      summary: "Registers a new user"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "user"
+        description: "Retrieves all needed data for user creation"
+        required: true
+        schema:
+          $ref: "#/definitions/UserRegister"
+      responses:
+        204:
+          description: "Creates new user"
+        400:
+          description: "Creation failed"
+  /msgs:
+    get:
+      tags: 
+      - "message"
+      description: "Get all messages from all users"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Message"
+  /msgs/{username}:
+    get:
+      tags: 
+      - "message"
+      description: "Retrieves all messages from user in path"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "Needs valid username"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Retrieve messages"
+          schema:
+            $ref: "#/definitions/Message"
+        400:
+          description: "No user found"
+    post:
+      tags: 
+      - "message"
+      summary: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "Retrieve messages by given username"
+        required: true
+        type: "string"
+      - name: "content"
+        in: "body"
+        description: "Content of message"
+        schema:
+          type: "string"
+      responses:
+        204:
+          description: ""
+  /fllws/{username}:
+    get:
+      tags: 
+      - "user"
+      description: "Get all followers"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "Retrieves all usernames that the user in path is following"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Returns all usernames"
+          schema:
+            type: "string"
+            example: "funky_username"
+    post:
+      tags: 
+      - "user"
+      description: "Starts following user from username to ID in body"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "User who is going to follow someone"
+        required: true
+        type: "string"
+      - name: "content"
+        in: "body"
+        description: "ID of user to be followed"
+        schema:
+          type: "string"
+      responses:
+        204:
+          description: "Successful operation"
+        400:
+          description: "No user found"
+definitions:
+  UserRegister:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+  Message:
+    type: "object"
+    properties:
+      content:
+        type: "string"
+      pub_date:
+        type: "string"
+        format: "date-time"
+      user:
+        type: "string"
+externalDocs:
+  description: "Find out more about MiniTwit"
+  url: "https://github.com/janschill/uni-devops/wiki"
+  
