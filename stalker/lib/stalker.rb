@@ -14,7 +14,7 @@ module Stalker
         begin
           connector = Connector.new(site['address'], site['protocol'], site['port'], site['path'])
           connector.request
-          writer.write_conncetion(connector, site)
+          writer.write_connection(connector, site)
         rescue StandardError => e
           writer.write(e)
         end
