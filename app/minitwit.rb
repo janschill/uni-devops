@@ -10,6 +10,7 @@ require 'prometheus/client'
 require 'usagewatch_ext'
 require 'logger'
 require 'yaml'
+require 'cgi'
 
 module MiniTwit
   # Main class for the application routing
