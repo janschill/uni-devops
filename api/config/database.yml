@@ -1,11 +1,11 @@
 default:
-  adapter: sqlite
+  password: REDACTED
 
 development:
-  database: /var/www/db/development.db
+  database: minitwit_dev
 
 production:
-  database: /var/www/db/production.db
+  database: minitwit_prod
 
 test:
-  database: /var/www/db/test.db
+  database: minitwit_test
