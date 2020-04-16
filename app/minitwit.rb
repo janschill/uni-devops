@@ -181,7 +181,7 @@ module MiniTwit
             view('timeline')
           end
         end
-      rescue Error => e
+      rescue StandardError => e
         msg = 'Exception raised by request ' + r.request_method.to_s + ' ' + r.path.to_s
         if r.post?
           r.params['password'] = '_REDACTED_' unless r.params['password'].nil?

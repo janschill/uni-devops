@@ -213,7 +213,7 @@ module MiniTwit
             end
           end
         end
-      rescue Error => e
+      rescue StandardError => e
         msg = 'Exception raised by request ' + r.request_method.to_s + ' ' + r.path.to_s
         if r.post?
           body['password'] = '_REDACTED_' unless body['password'].nil?
