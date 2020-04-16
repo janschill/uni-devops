@@ -11,8 +11,8 @@ gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
 gem 'sequel'
-gem 'sqlite3'
 gem 'tilt'
+gem 'mysql2'
 
 group :developement do
   gem 'rubocop', require: false
