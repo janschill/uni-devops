@@ -12,9 +12,9 @@ gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
 gem 'sequel'
-gem 'sqlite3'
 gem 'tilt'
 gem 'usagewatch_ext'
+gem 'mysql2'
 
 group :development do
   gem 'faker'

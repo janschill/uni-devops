@@ -3,8 +3,7 @@ FROM ruby:2.6.5-alpine3.11
 EXPOSE 80
 
 RUN apk add build-base && \
-    apk add sqlite-dev && \
-    apk add sqlite && \
+    apk add mariadb-dev && \
     gem install bundler
 
 # Make sure Gems are cached

@@ -32,7 +32,6 @@ namespace :app do
 
   task :start do
     Rake::Task['log:create'].invoke
-    Rake::Task['db:create'].invoke
     Rake::Task['env:generate'].invoke
     Rake::Task['app:server:production'].invoke
   end
@@ -53,13 +52,6 @@ end
 
 namespace :db do
   database = YAML.load_file('config/database.yml')
-
-  task :create do
-    puts 'Creating databases …'
-    sh "sqlite3 #{database['development']['database']} < db/schema.sql" unless File.exist?(database['development']['database'])
-    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
-    sh "sqlite3 #{database['test']['database']} < db/schema.sql" unless File.exist?(database['test']['database'])
-  end
 
   task :seed do
     if File.exist?(database['development']['database']) &&
