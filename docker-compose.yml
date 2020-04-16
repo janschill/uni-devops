@@ -24,8 +24,8 @@ services:
     networks:
       - main
     depends_on:
-      - grafana
-      - prometheus
+      # - grafana
+      # - prometheus
       - nginx-proxy
     environment:
       - VIRTUAL_HOST=minitwit.janschill.de
@@ -42,8 +42,8 @@ services:
       - main
     depends_on:
       - app
-      - grafana
-      - prometheus
+      # - grafana
+      # - prometheus
       - nginx-proxy
     environment:
       - VIRTUAL_HOST=minitwit-api.janschill.de
