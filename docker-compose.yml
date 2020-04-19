@@ -70,10 +70,10 @@ services:
   #   networks:
   #     - main
 
-  stalker:
-    image: freakency/devops_minitwit_stalker
-    container_name: devops_minitwit_stalker
-    volumes:
-      - /root/log:/var/www/stalker/log
-    networks:
-      - main
+  # stalker:
+  #   image: freakency/devops_minitwit_stalker
+  #   container_name: devops_minitwit_stalker
+  #   volumes:
+  #     - /root/log:/var/www/stalker/log
+  #   networks:
+  #     - main
