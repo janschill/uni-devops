@@ -39,7 +39,7 @@ namespace :api do
 end
 
 namespace :db do
-  database = YAML.load_file('config/database.yml')
+  databases = YAML.load_file('config/database.yml')
 
   task :drop do
     puts 'Dropping databases …'

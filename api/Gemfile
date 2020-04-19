@@ -7,12 +7,12 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gem 'bcrypt'
 gem 'json'
 gem 'logger'
+gem 'mysql2'
 gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
 gem 'sequel'
 gem 'tilt'
-gem 'mysql2'
 
 group :developement do
   gem 'rubocop', require: false

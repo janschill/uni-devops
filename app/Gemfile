@@ -8,12 +8,12 @@ gem 'bcrypt'
 gem 'dotenv'
 gem 'json'
 gem 'logger'
+gem 'mysql2'
 gem 'prometheus-client'
 gem 'rake'
 gem 'roda'
 gem 'sequel'
 gem 'tilt'
-gem 'mysql2'
 gem 'usagewatch_ext'
 
 group :development do
