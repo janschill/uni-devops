@@ -23,3 +23,6 @@ Layout/LineLength:
 
 Style/FormatStringToken:
   Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false

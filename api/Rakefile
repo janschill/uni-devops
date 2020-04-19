@@ -22,7 +22,6 @@ namespace :api do
 
   task :start do
     Rake::Task['log:create'].invoke
-    Rake::Task['db:create'].invoke
     Rake::Task['api:server:start'].invoke
   end
 
@@ -40,12 +39,7 @@ namespace :api do
 end
 
 namespace :db do
-  database = YAML.load_file('config/database.yml')
-
-  task :create do
-    puts 'Creating databases …'
-    sh "sqlite3 #{database['production']['database']} < db/schema.sql" unless File.exist?(database['production']['database'])
-  end
+  databases = YAML.load_file('config/database.yml')
 
   task :drop do
     puts 'Dropping databases …'
