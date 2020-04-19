@@ -2,21 +2,31 @@ name: Deploy files
 
 on:
   pull_request:
-    branches: [ production ]
+    branches: [production]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Copy docker-compose.yml via scp
-      uses: appleboy/scp-action@master
-      env:
-        HOST: ${{ secrets.REMOTE_HOST }}
-        USERNAME: "root"
-        PORT: 22
-        KEY: ${{ secrets.SERVER_SSH_KEY }}
-      with:
-        source: "docker-compose.yml,prometheus.yml,logging_elk/"
-        target: "/root/minitwit"
+      - uses: actions/checkout@v1
+      - name: Copy docker-compose.yml via scp to droplet-1
+        uses: appleboy/scp-action@master
+        env:
+          HOST: ${{ secrets.REMOTE_HOST }}
+          USERNAME: "root"
+          PORT: 22
+          KEY: ${{ secrets.SERVER_SSH_KEY }}
+        with:
+          source: "docker-compose.yml,prometheus.yml,logging_elk/"
+          target: "/root/minitwit"
+      - name: Copy docker-compose.yml via scp to droplet-2
+        uses: appleboy/scp-action@master
+        env:
+          HOST: ${{ secrets.REMOTE_HOST_2 }}
+          USERNAME: "root"
+          PORT: 22
+          KEY: ${{ secrets.SERVER_SSH_KEY }}
+        with:
+          source: "docker-compose.yml,prometheus.yml,logging_elk/"
+          target: "/root/minitwit"
