@@ -15,7 +15,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
       ELASTIC_PASSWORD: secret
       discovery.type: single-node
     networks:
