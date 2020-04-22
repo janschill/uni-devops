@@ -38,17 +38,6 @@ namespace :api do
   end
 end
 
-namespace :db do
-  databases = YAML.load_file('config/database.yml')
-
-  task :drop do
-    puts 'Dropping databases …'
-    sh "rm #{databases['development']['database']}"
-    sh "rm #{databases['test']['database']}"
-    sh "rm #{databases['production']['database']}"
-  end
-end
-
 namespace :log do
   log_config = YAML.load_file('config/log.yml')
   task :create do

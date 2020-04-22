@@ -51,25 +51,6 @@ namespace :app do
 end
 
 namespace :db do
-  database = YAML.load_file('config/database.yml')
-
-  task :seed do
-    if File.exist?(database['development']['database']) &&
-       File.exist?(database['test']['database'])
-      puts 'Seeding development and testing database …'
-      require './db/seeder'
-    else
-      puts 'Database is missing. Please run db:create to create databases.'
-    end
-  end
-
-  task :drop do
-    puts 'Dropping databases …'
-    File.delete((databases['development']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
-    File.delete((databases['test']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
-    File.delete((databases['production']['database']).to_s) if File.exist?((databases['development']['database']).to_s)
-  end
-
   task :inspect do
     puts 'Inspecting database …'
     sh 'bin/flag_tool.rb -i | less'
