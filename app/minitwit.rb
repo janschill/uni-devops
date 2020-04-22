@@ -140,7 +140,7 @@ module MiniTwit
         r.get 'logout' do
           request_labels = { endpoint: r.path, method: r.request_method }
           logger.info('User ' + session[:user_id].to_s + ' logged out')
-          session[:user_id].clear
+          session.clear
           r.redirect('/')
         end
 
