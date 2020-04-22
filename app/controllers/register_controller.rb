@@ -34,7 +34,7 @@ class RegisterController < ApplicationController
         email: email_address,
         username: username,
         password: BCrypt::Password.create(password)
-      ).save_changes
+      )
       user.save_changes
     end
     [error, user]
