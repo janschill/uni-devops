@@ -39,11 +39,7 @@ module MiniTwit
 
     before do
       response_start_time = Time.now
-      if session[:user_id].nil?
-        user = nil
-      else
-        user = User.where(user_id: session[:user_id]).first
-      end
+      user = session[:user_id].nil? ? nil : User.where(user_id: session[:user_id]).first
       cpu_load_gauge.set(usw.uw_cpuused)
     end
 
