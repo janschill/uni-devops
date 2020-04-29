@@ -17,12 +17,13 @@ module MiniTwit
     logger = Logger.new(log_config['api']['filepath'], 10, 1_024_000)
     logger.info('Initializing API')
 
-    latest = 0
     response_start_time = nil
 
     prometheus = Prometheus::Client.registry
     http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to enpoints of the api', labels: %i[method endpoint])
     http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time', labels: %i[method endpoint])
+
+    DB[:latest].insert(latest_value: 0) if DB[:latest].count.zero?
 
     request_labels = nil
 
@@ -43,13 +44,14 @@ module MiniTwit
       begin
         r.get 'latest' do
           request_labels = { endpoint: r.path, method: r.request_method }
-          return { 'latest' => latest }.to_json
+          latest_value = DB[:latest].first[:latest_value]
+          return { 'latest' => latest_value }.to_json
         end
 
         body = JSON.parse(r.body.read) if r.post?
 
-        try_latest = r.params['latest'].to_s
-        latest = try_latest.to_i if try_latest != ''
+        try_latest_value = r.params['latest'].to_s
+        DB[:latest].update(latest_value: try_latest_value.to_i) if try_latest_value != ''
 
         r.post 'register' do
           request_labels = { endpoint: r.path, method: r.request_method }
@@ -220,9 +222,10 @@ module MiniTwit
           msg += ' ' + body.to_s
         end
         msg += ':'
-        logger.error(msg.gsub(/[\r\n]/, ' '))
-        logger.error(e.message.gsub(/[\r\n]/, ' '))
-        logger.error(e.backtrace.join(', ').gsub(/[\r\n]/, ' '))
+        newline_regex = /[\r\n]/
+        logger.error(msg.gsub(newline_regex, ' '))
+        logger.error(e.message.gsub(newline_regex, ' '))
+        logger.error(e.backtrace.join(', ').gsub(newline_regex, ' '))
         raise e # let rack handle the exception
       end
     end

@@ -39,7 +39,7 @@ module MiniTwit
 
     before do
       response_start_time = Time.now
-      user = session[:user_id].nil? ? nil : User.where(user_id: session[:user_id]).first
+      user = session['user_id'].nil? ? nil : User.where(user_id: session['user_id']).first
       cpu_load_gauge.set(usw.uw_cpuused)
     end
 
@@ -82,10 +82,10 @@ module MiniTwit
 
         r.post 'add_message' do
           request_labels = { endpoint: r.path, method: r.request_method }
-          r.redirect('/') if session[:user_id].nil?
+          r.redirect('/') if session['user_id'].nil?
           message_controller = MessageController.new(r, user)
           message = message_controller.add_message
-          logger.info('User ' + session[:user_id].to_s + ' posted Message ' + message.message_id.to_s) unless message.nil?
+          logger.info('User ' + session['user_id'].to_s + ' posted Message ' + message.message_id.to_s) unless message.nil?
           r.redirect('/')
         end
 
@@ -103,7 +103,7 @@ module MiniTwit
             error, user = login_controller.attempt_login_user
             if error.nil?
               logger.info('User ' + user.user_id.to_s + ' logged in')
-              session[:user_id] = user.user_id
+              session['user_id'] = user.user_id
               r.redirect('/')
             else
               @error = error
@@ -131,7 +131,7 @@ module MiniTwit
               view('register')
             else
               logger.info('New user with id ' + user.user_id.to_s + ' registered')
-              session[:user_id] = user.user_id
+              session['user_id'] = user.user_id
               r.redirect('/')
             end
           end
@@ -139,7 +139,7 @@ module MiniTwit
 
         r.get 'logout' do
           request_labels = { endpoint: r.path, method: r.request_method }
-          logger.info('User ' + session[:user_id].to_s + ' logged out')
+          logger.info('User ' + session['user_id'].to_s + ' logged out')
           session.clear
           r.redirect('/')
         end
@@ -152,7 +152,7 @@ module MiniTwit
 
             r.on 'follow' do
               if user_controller.attempt_follow
-                logger.info('User ' + session[:user_id].to_s + ' started following User ' + target_user_id.to_s)
+                logger.info('User ' + session['user_id'].to_s + ' started following User ' + target_user_id.to_s)
                 r.redirect("/user/#{user_controller.target_user.user_id}")
               else
                 r.redirect('/')
@@ -161,7 +161,7 @@ module MiniTwit
 
             r.on 'unfollow' do
               if user_controller.attempt_unfollow
-                logger.info('User ' + session[:user_id].to_s + ' unfollowed User ' + target_user_id.to_s)
+                logger.info('User ' + session['user_id'].to_s + ' unfollowed User ' + target_user_id.to_s)
                 r.redirect("/user/#{user_controller.target_user.user_id}")
               else
                 r.redirect('/')
@@ -188,9 +188,10 @@ module MiniTwit
           msg += ' ' + r.params.to_s
         end
         msg += ':'
-        logger.error(msg.gsub(/[\r\n]/, ' '))
-        logger.error(e.message.gsub(/[\r\n]/, ' '))
-        logger.error(e.backtrace.join(', ') .gsub(/[\r\n]/, ' '))
+        newline_regex = /[\r\n]/
+        logger.error(msg.gsub(newline_regex, ' '))
+        logger.error(e.message.gsub(newline_regex, ' '))
+        logger.error(e.backtrace.join(', ').gsub(newline_regex, ' '))
         raise e # let rack handle the exception
       end
     end
