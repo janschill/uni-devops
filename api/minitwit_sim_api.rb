@@ -222,9 +222,10 @@ module MiniTwit
           msg += ' ' + body.to_s
         end
         msg += ':'
-        logger.error(msg.gsub(/[\r\n]/, ' '))
-        logger.error(e.message.gsub(/[\r\n]/, ' '))
-        logger.error(e.backtrace.join(', ').gsub(/[\r\n]/, ' '))
+        newline_regex = /[\r\n]/
+        logger.error(msg.gsub(newline_regex, ' '))
+        logger.error(e.message.gsub(newline_regex, ' '))
+        logger.error(e.backtrace.join(', ').gsub(newline_regex, ' '))
         raise e # let rack handle the exception
       end
     end
