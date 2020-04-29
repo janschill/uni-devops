@@ -26,8 +26,18 @@ if ARGV.length == 1 && ARGV[0].eql?('-h')
   puts help_text
   exit(true)
 end
-databases = YAML.load_file('config/database.yml')
-DB = Sequel.sqlite(databases['development']['database'])
+
+databases = YAML.load_file('../config/database.yml')
+DB = Sequel.mysql2(
+  'minitwit_test',
+  user: 'doadmin',
+  password: databases['default']['password'].to_s,
+  host: 'minitwit-db-do-user-3981230-0.a.db.ondigitalocean.com',
+  port: 25060,
+  max_connections: 10,
+  sslmode: 'require'
+)
+
 messages = DB[:messages]
 
 if ARGV.length == 1 && ARGV[0].eql?('-i')
