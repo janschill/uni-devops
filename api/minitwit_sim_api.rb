@@ -23,7 +23,7 @@ module MiniTwit
     http_requests_counter = prometheus.counter(:minitwit_api_http_requests, docstring: 'A counter of HTTP requests made to enpoints of the api', labels: %i[method endpoint])
     http_response_duration_histogram = prometheus.histogram(:minitwit_api_http_response_duration, docstring: 'A histogram tracking http response time', labels: %i[method endpoint])
 
-    DB[:latest].insert(latest_value: 0) if DB[:latest].count == 0
+    DB[:latest].insert(latest_value: 0) if DB[:latest].count.zero?
 
     request_labels = nil
 
