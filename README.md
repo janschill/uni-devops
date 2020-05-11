@@ -1,3 +1,4 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=janschill_uni-devops&metric=alert_status)](https://sonarcloud.io/dashboard?id=janschill_uni-devops) [![Build Status](https://travis-ci.org/janschill/uni-devops.svg?branch=master)](https://travis-ci.org/janschill/uni-devops) ![RubyCritic](https://github.com/janschill/uni-devops/workflows/RubyCritic/badge.svg) ![Rubocop](https://github.com/janschill/uni-devops/workflows/Rubocop/badge.svg)
 # MiniTwit
 
 ## What is MiniTwit?
