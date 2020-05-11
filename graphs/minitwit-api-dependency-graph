@@ -1,0 +1,17 @@
+digraph G {
+  "api" -> "bcrypt"
+  "api" -> "cgi"
+  "api" -> "json"
+  "api" -> "logger"
+  "api" -> "mysql2"
+  "api" -> "prometheus-client"
+  "api" -> "Rack::CommonLogger"
+  "api" -> "rake"
+  "api" -> "roda"
+  "api" -> "rubocop-rspec"
+  "api" -> "rubocop"
+  "api" -> "rubycritic"
+  "api" -> "sequel"
+  "api" -> "tilt"
+  "api" -> "yaml"
+}
