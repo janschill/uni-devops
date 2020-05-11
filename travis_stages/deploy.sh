@@ -19,5 +19,13 @@ eval "$(ssh-agent -s)"
 chmod 600 ./deploy_key
 echo -e "Host $SERVER_IP_ADDRESS\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 ssh-add ./deploy_key
+
+echo "Deploying on droplet 1"
+echo "Shutting it down .. "
 ssh -i ./deploy_key -o "StrictHostKeyChecking no" root@janschill.de "docker-compose -f /root/minitwit/docker-compose.yml down && docker-compose -f /root/minitwit/docker-compose.yml up -d"
+echo "Droplet is up and running"
+
+echo "Deploying on droplet 2"
+echo "Shutting it down .. "
 ssh -i ./deploy_key -o "StrictHostKeyChecking no" root@161.35.23.91 "docker-compose -f /root/minitwit/docker-compose.yml down && docker-compose -f /root/minitwit/docker-compose.yml up -d"
+echo "Droplet is up and running"
